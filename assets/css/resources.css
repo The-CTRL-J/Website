@@ -31,6 +31,7 @@
   font-size: clamp(2rem, 6vw, 3.5rem);
   font-weight: 800;
   line-height: 1.08;
+  color: var(--text);
 }
 
 .resources-subtitle {
@@ -74,6 +75,7 @@
   font-size: clamp(1.4rem, 3.4vw, 2rem);
   font-weight: 800;
   line-height: 1.15;
+  color: var(--text);
 }
 
 .catalog-title::after {
@@ -127,6 +129,7 @@
   font-size: clamp(1.4rem, 2.8vw, 2rem);
   font-weight: 800;
   line-height: 1.15;
+  color: var(--text);
 }
 
 .resource-card-author {
@@ -145,4 +148,47 @@
   margin: 8px 0 0;
   font-size: 1rem;
   line-height: 1.35;
+  color: var(--text);
+}
+
+:root[data-theme="light"] .resources-main {
+  background:
+    radial-gradient(1200px 380px at 10% -20%, rgba(48, 148, 255, 0.18), transparent 60%),
+    radial-gradient(900px 320px at 90% 110%, rgba(40, 104, 255, 0.16), transparent 60%),
+    rgba(241, 246, 255, 0.72);
+  border-color: rgba(28, 43, 70, 0.24);
+}
+
+:root[data-theme="light"] .resources-subtitle {
+  color: #2f6fbe;
+}
+
+:root[data-theme="light"] .resources-catalog {
+  border-color: rgba(29, 45, 74, 0.2);
+  background: linear-gradient(160deg, rgba(234, 241, 253, 0.9), rgba(224, 234, 249, 0.94));
+}
+
+:root[data-theme="light"] .filter-chip {
+  border-color: rgba(30, 51, 86, 0.2);
+  background: rgba(255, 255, 255, 0.86);
+  color: #2a3853;
+}
+
+:root[data-theme="light"] .resource-card {
+  border-color: rgba(28, 45, 76, 0.22);
+  background: rgba(249, 252, 255, 0.92);
+  box-shadow: 0 10px 24px rgba(28, 42, 70, 0.14);
+}
+
+:root[data-theme="light"] .resource-badge {
+  background: rgba(26, 44, 75, 0.08);
+  color: #2f6fbe;
+}
+
+:root[data-theme="light"] .resource-card-author {
+  color: #2f6fbe;
+}
+
+:root[data-theme="light"] .resource-card-author a {
+  color: #0f64cc;
 }

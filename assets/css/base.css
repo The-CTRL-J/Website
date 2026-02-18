@@ -170,6 +170,14 @@ body::after {
   font-size: 1.05rem;
 }
 
+.ui-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+  margin: 0 auto;
+  pointer-events: none;
+}
+
 .settings-panel,
 .music-panel {
   position: absolute;
@@ -380,6 +388,9 @@ body::after {
   padding: 6px 10px;
   cursor: pointer;
   min-width: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .music-mini-btn {
@@ -390,6 +401,9 @@ body::after {
   padding: 6px 8px;
   cursor: pointer;
   min-width: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .music-volume {

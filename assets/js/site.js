@@ -13,9 +13,11 @@
   const musicCurrentTime = document.getElementById("music-current-time");
   const musicDuration = document.getElementById("music-duration");
   const musicPlayBtn = document.getElementById("music-play-btn");
+  const musicPlayIcon = document.getElementById("music-play-icon");
   const musicPrevBtn = document.getElementById("music-prev-btn");
   const musicNextBtn = document.getElementById("music-next-btn");
   const musicMuteBtn = document.getElementById("music-mute-btn");
+  const musicMuteIcon = document.getElementById("music-mute-icon");
   const musicVolume = document.getElementById("music-volume");
   const musicQueueBtn = document.getElementById("music-queue-btn");
   const musicQueuePanel = document.getElementById("music-queue-panel");
@@ -49,8 +51,10 @@
   const musicVolumeStorageKey = "site-music-volume";
   const musicMuteStorageKey = "site-music-muted";
   const musicStateStorageKey = "site-music-state";
+  const musicAutoStartStorageKey = "site-music-autostart";
   const isNestedPage = /\/(resources|credit)(\/|$)/i.test(window.location.pathname || "");
   const assetRoot = isNestedPage ? "../assets/" : "assets/";
+  const iconBasePath = `${assetRoot}images/icons/`;
   const musicBasePath = `${assetRoot}Musics/`;
   const fallbackCoverSrc = `${assetRoot}images/album-placeholder.svg`;
 
@@ -181,7 +185,7 @@
     */
     const shootingLayer = document.createElement("div");
     shootingLayer.className = "starnight-shooting-layer";
-    for (let i = 0; i < 24; i += 1) {
+    for (let i = 0; i < 10; i += 1) {
       const shootingstar = document.createElement("span");
       shootingstar.className = "shootingstar";
       shootingstar.style.top = `${random(0, 70)}%`;
@@ -598,7 +602,8 @@
     );
     currentTrackIndex = savedIndex >= 0 ? savedIndex : 0;
 
-    setTrack(currentTrackIndex, false, "next", false);
+    const shouldAutoStart = localStorage.getItem(musicAutoStartStorageKey) !== "0";
+    setTrack(currentTrackIndex, shouldAutoStart, "next", false);
     if (musicAudio && savedState) {
       const activeTrack = playlist[currentTrackIndex];
       const activeTrackFile = activeTrack ? getBasename(activeTrack.url).toLowerCase() : "";
@@ -636,7 +641,7 @@
         }
       }
 
-      if (savedState.wasPlaying) {
+      if (savedState.wasPlaying || shouldAutoStart) {
         pendingAutoplay = true;
         pendingAutoplayUrl = playlist[currentTrackIndex].requestUrl || playlist[currentTrackIndex].url;
         if (musicAudio.readyState >= 2) {
@@ -654,7 +659,9 @@
     }
     const playLabel = activeTranslation.musicPlay || "Play";
     const pauseLabel = activeTranslation.musicPause || "Pause";
-    musicPlayBtn.textContent = musicAudio.paused ? "▶" : "⏸";
+    if (musicPlayIcon) {
+      musicPlayIcon.src = musicAudio.paused ? `${iconBasePath}play.svg` : `${iconBasePath}pause.svg`;
+    }
     musicPlayBtn.setAttribute("aria-label", musicAudio.paused ? playLabel : pauseLabel);
     musicPlayBtn.title = musicAudio.paused ? playLabel : pauseLabel;
   }
@@ -665,7 +672,9 @@
     }
     const muteLabel = activeTranslation.musicMute || "Mute";
     const unmuteLabel = activeTranslation.musicUnmute || "Unmute";
-    musicMuteBtn.textContent = musicAudio.muted ? "🔇" : "🔊";
+    if (musicMuteIcon) {
+      musicMuteIcon.src = musicAudio.muted ? `${iconBasePath}mute.svg` : `${iconBasePath}volume.svg`;
+    }
     musicMuteBtn.setAttribute("aria-label", musicAudio.muted ? unmuteLabel : muteLabel);
     musicMuteBtn.title = musicAudio.muted ? unmuteLabel : muteLabel;
   }
@@ -721,7 +730,22 @@
       pendingAutoplayUrl = "";
       updatePlayButtonLabel();
     }).catch(() => {
-      // keep pending flag; next user gesture or canplay can retry
+      const wasMuted = musicAudio.muted;
+      musicAudio.muted = true;
+      musicAudio.play().then(() => {
+        pendingAutoplay = false;
+        pendingAutoplayUrl = "";
+        if (!wasMuted) {
+          setTimeout(() => {
+            musicAudio.muted = false;
+            updateMuteButtonLabel();
+          }, 140);
+        }
+        updatePlayButtonLabel();
+      }).catch(() => {
+        musicAudio.muted = wasMuted;
+        // keep pending flag; next user gesture or canplay can retry
+      });
     });
   }
 
@@ -1424,6 +1448,17 @@
     syncMusicUi();
     renderQueue();
   });
+
+  // Some browsers block autoplay until first user interaction.
+  const unlockAutoplay = () => {
+    tryPendingAutoplay();
+    if (!pendingAutoplay) {
+      document.removeEventListener("pointerdown", unlockAutoplay);
+      document.removeEventListener("keydown", unlockAutoplay);
+    }
+  };
+  document.addEventListener("pointerdown", unlockAutoplay, { passive: true });
+  document.addEventListener("keydown", unlockAutoplay);
 
   const targetBrandSuffix = titleByPage[pageName] || "Website";
   const targetTabTitle = `${brandPrefix}${targetBrandSuffix}`;

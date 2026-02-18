@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -18,11 +18,22 @@
   <meta name="twitter:title" content="CTRL_J - Credit">
   <meta name="twitter:description" content="Credits du site CTRL_J et informations sur la creation du projet.">
   <meta name="twitter:image" content="https://thejay-is-using-git.github.io/Website/assets/images/CTRL_J.png">
+  <script>
+    (function () {
+      try {
+        var theme = localStorage.getItem("site-theme") || "system";
+        if (theme === "system") {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) {}
+    })();
+  </script>
   <link rel="icon" type="image/png" href="../assets/images/favicon.png?v=2">
-  <link rel="stylesheet" href="../assets/css/base.css">
-  <link rel="stylesheet" href="../assets/css/starnight.css">
-  <link rel="stylesheet" href="../assets/css/credit.css">
-  <script src="../assets/js/embed-fallback.js?v=20260218b"></script>
+  <link rel="stylesheet" href="../assets/css/base.css?v=20260218c">
+  <link rel="stylesheet" href="../assets/css/starnight.css?v=20260218c">
+  <link rel="stylesheet" href="../assets/css/credit.css?v=20260218c">
+  <script src="../assets/js/embed-fallback.js?v=20260218c"></script>
 </head>
 <body data-page="credit">
   <header class="topbar">
@@ -43,7 +54,7 @@
           <div id="music-player-slot"></div>
 
           <div class="tool-pop">
-            <button class="settings-btn" id="settings-btn" type="button" aria-expanded="false" aria-controls="settings-panel" aria-label="Parametres">?</button>
+            <button class="settings-btn" id="settings-btn" type="button" aria-expanded="false" aria-controls="settings-panel" aria-label="Parametres">&#9881;</button>
             <div class="settings-panel" id="settings-panel" aria-hidden="true">
               <div class="setting-row">
                 <label for="theme-select" id="theme-label">Theme</label>
@@ -87,12 +98,14 @@
     </footer>
   </main>
 
-  <script src="../assets/js/translations.js?v=20260218b"></script>
-  <script src="../assets/Musics/playlist.js?v=20260218b"></script>
-  <script src="../assets/js/music-player-component.js?v=20260218b"></script>
-  <script src="../assets/js/site.js?v=20260218b"></script>
+  <script src="../assets/js/translations.js?v=20260218c"></script>
+  <script src="../assets/Musics/playlist.js?v=20260218c"></script>
+  <script src="../assets/js/music-player-component.js?v=20260218c"></script>
+  <script src="../assets/js/site.js?v=20260218c"></script>
 </body>
 </html>
+
+
 
 
 
