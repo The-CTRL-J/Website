@@ -116,6 +116,18 @@
     return lang.startsWith("en") ? "en" : "fr";
   }
 
+  function isPageReload() {
+    try {
+      const navEntries = performance.getEntriesByType("navigation");
+      if (Array.isArray(navEntries) && navEntries.length) {
+        return navEntries[0].type === "reload";
+      }
+    } catch (_) {
+      // ignore and fallback below
+    }
+    return Boolean(performance.navigation && performance.navigation.type === 1);
+  }
+
   function applyTheme(themeChoice) {
     const effectiveTheme = themeChoice === "system" ? getSystemTheme() : themeChoice;
     root.setAttribute("data-theme", effectiveTheme);
@@ -1090,7 +1102,9 @@
   });
 
   const targetBrandSuffix = titleByPage[pageName] || "Website";
-  if (brandTitle && !reduceMotionQuery.matches) {
+  const shouldAnimateBrand = !reduceMotionQuery.matches && !isPageReload();
+
+  if (brandTitle && shouldAnimateBrand) {
     const previousBrandSuffix = previousPageName ? (titleByPage[previousPageName] || "") : "";
     if (previousBrandSuffix && previousBrandSuffix !== targetBrandSuffix) {
       brandTitle.textContent = `${brandPrefix}${previousBrandSuffix}`;
