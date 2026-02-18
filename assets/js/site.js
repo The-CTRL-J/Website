@@ -1089,8 +1089,16 @@
     renderQueue();
   });
 
-  const shouldAnimateBrandFromLastPage = true;
-  typeBrandTitle(titleByPage[pageName] || "Website", shouldAnimateBrandFromLastPage);
+  const targetBrandSuffix = titleByPage[pageName] || "Website";
+  if (brandTitle && !reduceMotionQuery.matches) {
+    brandTitle.textContent = brandPrefix;
+    currentBrandSuffix = "";
+    setTimeout(() => {
+      typeBrandTitle(targetBrandSuffix, true);
+    }, 1000);
+  } else {
+    typeBrandTitle(targetBrandSuffix, true);
+  }
   sessionStorage.removeItem(pendingFromStorageKey);
   sessionStorage.removeItem(pendingTargetStorageKey);
   sessionStorage.setItem(lastPageStorageKey, pageName);
