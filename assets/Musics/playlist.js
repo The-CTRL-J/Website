@@ -1,9 +1,9 @@
-(() => {
+﻿(() => {
   const basePath = "assets/Musics/";
-  const localFallbackTracks = [
-    "Mr. Blue Sky.mp3",
-    "≧◡≦.mp3"
-  ].map((file) => `${basePath}${encodeURIComponent(file)}`);
+  const fallbackTracks = [
+    `${basePath}Mr.%20Blue%20Sky.mp3`,
+    `${basePath}%E2%89%A7%E2%97%A1%E2%89%A6.mp3`
+  ];
 
   window.SITE_MUSIC_PLAYLIST = { tracks: [] };
 
@@ -12,8 +12,8 @@
     const isFileProtocol = window.location.protocol === "file:";
 
     if (isFileProtocol) {
-      window.SITE_MUSIC_PLAYLIST.tracks = localFallbackTracks;
-      return localFallbackTracks;
+      window.SITE_MUSIC_PLAYLIST.tracks = fallbackTracks;
+      return fallbackTracks;
     }
 
     try {
@@ -51,7 +51,8 @@
       }
     }
 
-    window.SITE_MUSIC_PLAYLIST.tracks = tracks;
-    return tracks;
+    const resolvedTracks = tracks.length ? tracks : fallbackTracks;
+    window.SITE_MUSIC_PLAYLIST.tracks = resolvedTracks;
+    return resolvedTracks;
   })();
 })();
