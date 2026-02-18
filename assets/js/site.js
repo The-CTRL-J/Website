@@ -519,19 +519,6 @@
     return playlist[currentTrackIndex] || null;
   }
 
-  function pictureTagToDataUrl(picture) {
-    if (!picture || !picture.data || !picture.format) {
-      return null;
-    }
-    const bytes = picture.data;
-    let binary = "";
-    for (let i = 0; i < bytes.length; i += 1) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    const base64 = window.btoa(binary);
-    return `data:${picture.format};base64,${base64}`;
-  }
-
   function setTrack(index, autoplay = false) {
     if (!musicAudio || !playlist.length) {
       return;
@@ -551,7 +538,6 @@
 
     pendingAutoplay = autoplay;
     pendingAutoplayUrl = requestUrl;
-    musicAudio.dataset.metaLoaded = "0";
     musicAudio.load();
 
     if (musicTrackTitle) {
@@ -566,7 +552,6 @@
 
     localStorage.setItem(musicTrackStorageKey, track.url);
     renderQueue();
-    applyMp3Metadata();
 
     if (autoplay) {
       if (musicAudio.readyState >= 2) {
@@ -672,25 +657,6 @@
     });
   }
 
-  function applyTagsToTrack(track, tags) {
-    if (!track || !tags) {
-      return;
-    }
-
-    const coverDataUrl = pictureTagToDataUrl(tags.picture);
-    if (coverDataUrl) {
-      track.cover = coverDataUrl;
-    }
-    if (tags.title) {
-      track.title = tags.title;
-    }
-    if (tags.artist) {
-      track.artist = tags.artist;
-    } else if (tags.album) {
-      track.artist = tags.album;
-    }
-  }
-
   function syncNowPlayingFromTrack(track) {
     if (!track) {
       return;
@@ -704,69 +670,6 @@
     if (musicCover) {
       applyCoverToImage(musicCover, track);
     }
-  }
-
-  function readTrackMetadata(track, trackIndex) {
-    if (!track || !window.jsmediatags || track.metaLoaded) {
-      return;
-    }
-
-    window.jsmediatags.read(track.requestUrl || track.url, {
-      onSuccess: ({ tags }) => {
-        track.metaLoaded = true;
-        applyTagsToTrack(track, tags);
-        if (trackIndex === currentTrackIndex) {
-          syncNowPlayingFromTrack(track);
-        }
-        renderQueue();
-      },
-      onError: () => {
-        track.metaLoaded = true;
-      }
-    });
-  }
-
-  function preloadPlaylistMetadata() {
-    if (!window.jsmediatags || !playlist.length) {
-      return;
-    }
-
-    playlist.forEach((track, idx) => {
-      if (!track.title || !track.artist || !track.cover) {
-        readTrackMetadata(track, idx);
-      }
-    });
-  }
-
-  function applyMp3Metadata() {
-    if (!musicAudio || !window.jsmediatags) {
-      return;
-    }
-    if (musicAudio.dataset.metaLoaded === "1") {
-      return;
-    }
-
-    const source = musicAudio.querySelector("source");
-    const fileUrl = source ? source.getAttribute("src") : musicAudio.getAttribute("src");
-    if (!fileUrl) {
-      return;
-    }
-
-    window.jsmediatags.read(fileUrl, {
-      onSuccess: ({ tags }) => {
-        musicAudio.dataset.metaLoaded = "1";
-        const currentTrack = playlist[currentTrackIndex];
-        if (!currentTrack) {
-          return;
-        }
-        applyTagsToTrack(currentTrack, tags);
-        syncNowPlayingFromTrack(currentTrack);
-        renderQueue();
-      },
-      onError: () => {
-        musicAudio.dataset.metaLoaded = "1";
-      }
-    });
   }
 
   function typeBrandTitle(targetSuffix, force = false) {
@@ -1184,7 +1087,6 @@
   loadPlaylist().then(() => {
     syncMusicUi();
     renderQueue();
-    preloadPlaylistMetadata();
   });
 
   const shouldAnimateBrandFromLastPage = hasKnownLastPage;
