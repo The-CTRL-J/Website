@@ -1091,8 +1091,14 @@
 
   const targetBrandSuffix = titleByPage[pageName] || "Website";
   if (brandTitle && !reduceMotionQuery.matches) {
-    brandTitle.textContent = brandPrefix;
-    currentBrandSuffix = "";
+    const previousBrandSuffix = previousPageName ? (titleByPage[previousPageName] || "") : "";
+    if (previousBrandSuffix && previousBrandSuffix !== targetBrandSuffix) {
+      brandTitle.textContent = `${brandPrefix}${previousBrandSuffix}`;
+      currentBrandSuffix = previousBrandSuffix;
+    } else {
+      brandTitle.textContent = brandPrefix;
+      currentBrandSuffix = "";
+    }
     setTimeout(() => {
       typeBrandTitle(targetBrandSuffix, true);
     }, 1000);
