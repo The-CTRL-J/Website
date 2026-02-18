@@ -373,6 +373,7 @@
     const track = getCurrentTrack();
     const state = {
       trackUrl: track ? track.url : localStorage.getItem(musicTrackStorageKey) || "",
+      trackFile: track ? getBasename(track.url).toLowerCase() : "",
       currentTime: Number.isFinite(musicAudio.currentTime) ? musicAudio.currentTime : 0,
       wasPlaying: !musicAudio.paused,
       volume: Number.isFinite(musicAudio.volume) ? musicAudio.volume : 1,
@@ -588,11 +589,28 @@
 
     const savedState = readSavedMusicState();
     const savedTrackUrl = (savedState && savedState.trackUrl) || localStorage.getItem(musicTrackStorageKey);
-    const savedIndex = playlist.findIndex((track) => track.url === savedTrackUrl);
+    const savedTrackFile = (savedState && typeof savedState.trackFile === "string")
+      ? savedState.trackFile
+      : (savedTrackUrl ? getBasename(savedTrackUrl).toLowerCase() : "");
+    const savedIndex = playlist.findIndex((track) =>
+      track.url === savedTrackUrl ||
+      (savedTrackFile && getBasename(track.url).toLowerCase() === savedTrackFile)
+    );
     currentTrackIndex = savedIndex >= 0 ? savedIndex : 0;
 
     setTrack(currentTrackIndex, false, "next", false);
-    if (musicAudio && savedState && savedState.trackUrl === (playlist[currentTrackIndex] && playlist[currentTrackIndex].url)) {
+    if (musicAudio && savedState) {
+      const activeTrack = playlist[currentTrackIndex];
+      const activeTrackFile = activeTrack ? getBasename(activeTrack.url).toLowerCase() : "";
+      const isSameTrack =
+        (savedState.trackUrl && activeTrack && savedState.trackUrl === activeTrack.url) ||
+        (savedTrackFile && activeTrackFile && savedTrackFile === activeTrackFile);
+
+      if (!isSameTrack) {
+        renderQueue();
+        return;
+      }
+
       if (Number.isFinite(savedState.volume) && savedState.volume >= 0 && savedState.volume <= 1) {
         musicAudio.volume = savedState.volume;
         if (musicVolume) {
