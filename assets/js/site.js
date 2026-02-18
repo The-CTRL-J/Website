@@ -286,7 +286,7 @@
   }
 
   function buildCoverCandidates(trackUrl, explicitCover) {
-    const extList = ["jpg", "jpeg", "png", "webp"];
+    const extList = ["jpg", "jpeg", "png", "webp", "svg"];
     const rawName = filenameWithoutExtension(trackUrl);
     const slug = slugifyCoverName(rawName);
     const candidates = [];
@@ -362,6 +362,7 @@
 
     let rawTracks = [];
     let playlistMeta = [];
+    let playlistJsonMeta = [];
     const playlistReady = window.SITE_MUSIC_PLAYLIST_READY;
     if (playlistReady && typeof playlistReady.then === "function") {
       try {
@@ -381,28 +382,31 @@
       }
     }
 
-    if (!playlistMeta.length) {
-      try {
-        const response = await fetch(`${musicBasePath}playlist.json`, { cache: "no-store" });
-        if (response.ok) {
-          const payload = await response.json();
-          if (Array.isArray(payload)) {
-            playlistMeta = payload;
-          } else if (payload && Array.isArray(payload.tracks)) {
-            playlistMeta = payload.tracks;
-          }
+    try {
+      const response = await fetch(`${musicBasePath}playlist.json`, { cache: "no-store" });
+      if (response.ok) {
+        const payload = await response.json();
+        if (Array.isArray(payload)) {
+          playlistJsonMeta = payload;
+        } else if (payload && Array.isArray(payload.tracks)) {
+          playlistJsonMeta = payload.tracks;
         }
-      } catch (_) {
-        // no playlist file, fallback below
       }
+    } catch (_) {
+      // no playlist file, fallback below
+    }
+
+    if (!playlistMeta.length && playlistJsonMeta.length) {
+      playlistMeta = playlistJsonMeta;
     }
 
     const detectedTracks = await detectTracksFromDirectory();
 
     if (detectedTracks.length) {
       // Build playlist from real files found in assets/Musics.
+      const metaSource = playlistJsonMeta.length ? playlistJsonMeta : playlistMeta;
       const metaByFile = new Map(
-        playlistMeta
+        metaSource
           .map((entry, idx) => normalizeTrack(entry, idx))
           .filter(Boolean)
           .map((entry) => [getBasename(entry.url).toLowerCase(), entry])
@@ -420,9 +424,9 @@
             }
           : url;
       });
-    } else if (playlistMeta.length) {
+    } else if (playlistJsonMeta.length || playlistMeta.length) {
       // Fallback when directory listing is unavailable.
-      rawTracks = playlistMeta;
+      rawTracks = playlistJsonMeta.length ? playlistJsonMeta : playlistMeta;
     }
 
     if (!rawTracks.length && defaultTrack) {

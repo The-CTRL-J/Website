@@ -2,8 +2,49 @@
   const basePath = "assets/Musics/";
   const fallbackTracks = [
     `${basePath}Mr.%20Blue%20Sky.mp3`,
-    `${basePath}%E2%89%A7%E2%97%A1%E2%89%A6.mp3`
+    `${basePath}Kubbi%20_%20Overworld.mp3`,
+    `${basePath}PlasticSixwall.mp3`
   ];
+
+  function getGitHubRepoContext() {
+    if (!window.location.hostname.endsWith(".github.io")) {
+      return null;
+    }
+
+    const owner = window.location.hostname.split(".")[0] || "";
+    const repo = window.location.pathname.split("/").filter(Boolean)[0] || "";
+    if (!owner || !repo) {
+      return null;
+    }
+
+    return { owner, repo };
+  }
+
+  async function detectTracksFromGitHubApi() {
+    const ctx = getGitHubRepoContext();
+    if (!ctx) {
+      return [];
+    }
+
+    try {
+      const apiUrl = `https://api.github.com/repos/${ctx.owner}/${ctx.repo}/contents/assets/Musics?ref=main`;
+      const response = await fetch(apiUrl, { cache: "no-store" });
+      if (!response.ok) {
+        return [];
+      }
+
+      const items = await response.json();
+      if (!Array.isArray(items)) {
+        return [];
+      }
+
+      return items
+        .filter((item) => item && item.type === "file" && /\.mp3$/i.test(item.name || ""))
+        .map((item) => `${basePath}${encodeURIComponent(item.name)}`);
+    } catch (_) {
+      return [];
+    }
+  }
 
   window.SITE_MUSIC_PLAYLIST = { tracks: [] };
 
@@ -34,7 +75,10 @@
       // ignore and fallback below
     }
 
-    // Fallback if directory listing is unavailable.
+    if (!tracks.length) {
+      tracks = await detectTracksFromGitHubApi();
+    }
+
     if (!tracks.length) {
       try {
         const response = await fetch(`${basePath}playlist.json`, { cache: "no-store" });

@@ -1,0 +1,22 @@
+﻿{
+  "tracks": [
+    {
+      "file": "Mr. Blue Sky.mp3",
+      "title": "Mr. Blue Sky",
+      "artist": "Electric Light Orchestra",
+      "cover": "assets/images/CTRL_J.png"
+    },
+    {
+      "file": "Kubbi _ Overworld.mp3",
+      "title": "Kubbi - Overworld",
+      "artist": "Kubbi",
+      "cover": "assets/images/CTRL_J.png"
+    },
+    {
+      "file": "PlasticSixwall.mp3",
+      "title": "PlasticSixwall",
+      "artist": "CTRL_J",
+      "cover": "assets/images/CTRL_J.png"
+    }
+  ]
+}
