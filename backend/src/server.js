@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { spawn } from "node:child_process";
 import { createReadStream, promises as fs } from "node:fs";
 import path from "node:path";
