@@ -12,6 +12,7 @@
   --overlay: linear-gradient(160deg, rgba(15, 15, 16, 0.62), rgba(43, 45, 49, 0.38), rgba(21, 22, 24, 0.62));
   --caution-band-size: 48px;
   --caution-band-shift: var(--caution-band-size);
+  --ui-icon-filter: brightness(0) saturate(100%) invert(92%) sepia(14%) saturate(474%) hue-rotate(183deg) brightness(103%) contrast(96%);
 }
 
 :root[data-theme="light"] {
@@ -28,6 +29,7 @@
   --overlay: linear-gradient(160deg, rgba(246, 248, 250, 0.7), rgba(246, 248, 250, 0.52), rgba(246, 248, 250, 0.72));
   --caution-band-size: 48px;
   --caution-band-shift: var(--caution-band-size);
+  --ui-icon-filter: brightness(0) saturate(100%) invert(16%) sepia(13%) saturate(793%) hue-rotate(177deg) brightness(95%) contrast(91%);
 }
 
 * {
@@ -181,6 +183,7 @@ body::after {
   display: block;
   margin: 0 auto;
   pointer-events: none;
+  filter: var(--ui-icon-filter);
 }
 
 .music-btn {

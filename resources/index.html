@@ -18,21 +18,11 @@
   <meta name="twitter:title" content="CTRL_J - Resources">
   <meta name="twitter:description" content="Retrouve les ressources de CTRL_J: liens utiles, publications, modding et communautes.">
   <meta name="twitter:image" content="https://thejay-is-using-git.github.io/Website/assets/images/CTRL_J.png">
-  <script>
-    (function () {
-      try {
-        var theme = localStorage.getItem("site-theme") || "system";
-        if (theme === "system") {
-          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-        }
-        document.documentElement.setAttribute("data-theme", theme);
-      } catch (e) {}
-    })();
-  </script>
+  <script src="../assets/js/theme-bootstrap.js?v=20260219a"></script>
   <link rel="icon" type="image/png" href="../assets/images/favicon.png?v=2">
-  <link rel="stylesheet" href="../assets/css/base.css?v=20260218d">
+  <link rel="stylesheet" href="../assets/css/base.css?v=20260219a">
   <link rel="stylesheet" href="../assets/css/starnight.css?v=20260218d">
-  <link rel="stylesheet" href="../assets/css/resources.css?v=20260218d">
+  <link rel="stylesheet" href="../assets/css/resources.css?v=20260219a">
   <script src="../assets/js/embed-fallback.js?v=20260218d"></script>
 </head>
 <body data-page="ressources">
@@ -55,7 +45,7 @@
 
           <div class="tool-pop">
             <button class="settings-btn" id="settings-btn" type="button" aria-expanded="false" aria-controls="settings-panel" aria-label="Parametres">
-              <img class="ui-icon" src="../assets/images/icons/settings.svg" alt="" aria-hidden="true">
+              <img class="ui-icon" src="../assets/images/icons/settings.webp" alt="" aria-hidden="true">
             </button>
             <div class="settings-panel" id="settings-panel" aria-hidden="true">
               <div class="setting-row">
@@ -100,31 +90,44 @@
           <button class="filter-chip" type="button" id="resources-filter-wiiu" data-filter="wiiu">Wii U</button>
         </div>
 
-        <h2 class="catalog-title" id="resources-catalog-title">Toutes creations</h2>
-
-        <div class="resource-card-grid">
-          <article class="resource-card" aria-label="Mod Wii U Google Translate" data-platform="wiiu">
-            <img class="resource-card-cover" src="../assets/images/Background.jpg" alt="Aperçu Wii U Google Translate">
-            <div class="resource-card-body">
-              <span class="resource-badge" id="resources-card1-badge">Wii U • Tool</span>
-              <h3 class="resource-card-title" id="resources-card1-title">Wii U Google Translate</h3>
-              <p class="resource-card-author"><span id="resources-card1-by">Publie par</span> <a href="#" rel="noopener noreferrer">CTRL_J</a></p>
-              <p class="resource-card-desc" id="resources-card1-desc">Patch utilitaire oriente traduction pour workflows de modding Wii U.</p>
-            </div>
-          </article>
-
-          <article class="resource-card" aria-label="Mod Wii Riivolution" data-platform="wii">
-            <img class="resource-card-cover" src="../assets/Musics/covers/FLUXXKLUB!.jpg" alt="Aperçu Wii Riivolution">
-            <div class="resource-card-body">
-              <span class="resource-badge" id="resources-card2-badge">Wii • Mod Loader</span>
-              <h3 class="resource-card-title" id="resources-card2-title">Wii Riivolution</h3>
-              <p class="resource-card-author"><span id="resources-card2-by">Publie par</span> <a href="#" rel="noopener noreferrer">CTRL_J</a></p>
-              <p class="resource-card-desc" id="resources-card2-desc">Pack de fichiers et reglages pour mods Wii via Riivolution.</p>
-            </div>
-          </article>
+        <div class="catalog-head">
+          <h2 class="catalog-title" id="resources-catalog-title">Toutes creations</h2>
+          <label class="resources-search-wrap" for="resources-search">
+            <input
+              id="resources-search"
+              class="resources-search"
+              type="search"
+              placeholder="Rechercher un projet..."
+              aria-label="Rechercher un projet"
+            >
+          </label>
         </div>
       </div>
+
     </section>
+
+    <div class="resource-card-grid">
+      <article class="resource-card" aria-label="Mod Wii U Google Translate" data-platform="wiiu">
+        <img class="resource-card-cover" src="../assets/images/Background.jpg" alt="Aperçu Wii U Google Translate">
+        <div class="resource-card-body">
+          <span class="resource-badge" id="resources-card1-badge">Wii U • Tool</span>
+          <h3 class="resource-card-title" id="resources-card1-title">Wii U Google Translate</h3>
+          <p class="resource-card-author"><span id="resources-card1-by">Publie par</span> <a href="#" rel="noopener noreferrer">CTRL_J</a></p>
+          <p class="resource-card-desc" id="resources-card1-desc">Patch utilitaire oriente traduction pour workflows de modding Wii U.</p>
+        </div>
+      </article>
+
+      <article class="resource-card" aria-label="Mod Wii Riivolution" data-platform="wii">
+        <img class="resource-card-cover" src="../assets/Musics/covers/FLUXXKLUB!.jpg" alt="Aperçu Wii Riivolution">
+        <div class="resource-card-body">
+          <span class="resource-badge" id="resources-card2-badge">Wii • Mod Loader</span>
+          <h3 class="resource-card-title" id="resources-card2-title">Wii Riivolution</h3>
+          <p class="resource-card-author"><span id="resources-card2-by">Publie par</span> <a href="#" rel="noopener noreferrer">CTRL_J</a></p>
+          <p class="resource-card-desc" id="resources-card2-desc">Pack de fichiers et reglages pour mods Wii via Riivolution.</p>
+        </div>
+      </article>
+    </div>
+    <p class="resources-empty" id="resources-empty" hidden>Desole mais il y a rien qui correspond :(</p>
 
     <footer>
       <p>CTRL_J/Website</p>
@@ -133,10 +136,13 @@
 
   <script src="../assets/js/translations.js?v=20260218d"></script>
   <script src="../assets/Musics/playlist.js?v=20260218d"></script>
-  <script src="../assets/js/music-player-component.js?v=20260218d"></script>
-  <script src="../assets/js/site.js?v=20260218d"></script>
+  <script src="../assets/js/music-player-component.js?v=20260219a"></script>
+  <script src="../assets/js/resources-filters.js?v=20260219a"></script>
+  <script src="../assets/js/site.js?v=20260219a"></script>
 </body>
 </html>
+
+
 
 
 

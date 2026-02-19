@@ -13,13 +13,13 @@
   slot.innerHTML = `
     <div class="tool-pop">
       <button class="music-btn" id="music-btn" type="button" aria-expanded="false" aria-controls="music-panel" aria-label="Musique">
-        <img class="ui-icon" src="${iconBase}music.svg" alt="" aria-hidden="true">
+        <img class="ui-icon" src="${iconBase}music.webp" alt="" aria-hidden="true">
       </button>
       <div class="music-panel" id="music-panel" aria-hidden="true">
         <div class="music-head">
           <p class="music-title" id="music-title">Music Player</p>
           <button class="music-mini-btn music-queue-toggle" id="music-queue-btn" type="button" aria-expanded="false" aria-controls="music-queue-panel" aria-label="Queue" title="Queue">
-            <img class="ui-icon" src="${iconBase}queue.svg" alt="" aria-hidden="true">
+            <img class="ui-icon" src="${iconBase}queue.webp" alt="" aria-hidden="true">
           </button>
         </div>
         <div class="music-now">
@@ -33,22 +33,22 @@
           <input class="music-progress" id="music-progress" type="range" min="0" max="100" step="0.1" value="0" aria-label="Music progress">
           <div class="music-time-nav">
             <button class="music-mini-btn" id="music-prev-btn" type="button" aria-label="Previous track" title="Previous">
-              <img class="ui-icon" src="${iconBase}prev.svg" alt="" aria-hidden="true">
+              <img class="ui-icon" src="${iconBase}prev.webp" alt="" aria-hidden="true">
             </button>
             <span id="music-current-time">0:00</span>
             <span class="music-time-sep">/</span>
             <span id="music-duration">0:00</span>
             <button class="music-mini-btn" id="music-next-btn" type="button" aria-label="Next track" title="Next">
-              <img class="ui-icon" src="${iconBase}next.svg" alt="" aria-hidden="true">
+              <img class="ui-icon" src="${iconBase}next.webp" alt="" aria-hidden="true">
             </button>
           </div>
         </div>
         <div class="music-controls">
           <button class="music-play-btn" id="music-play-btn" type="button" aria-label="Play" title="Play">
-            <img class="ui-icon" id="music-play-icon" src="${iconBase}play.svg" alt="" aria-hidden="true">
+            <img class="ui-icon" id="music-play-icon" src="${iconBase}play.webp" alt="" aria-hidden="true">
           </button>
           <button class="music-mini-btn" id="music-mute-btn" type="button" aria-label="Mute" title="Mute">
-            <img class="ui-icon" id="music-mute-icon" src="${iconBase}volume.svg" alt="" aria-hidden="true">
+            <img class="ui-icon" id="music-mute-icon" src="${iconBase}volume.webp" alt="" aria-hidden="true">
           </button>
           <input class="music-volume" id="music-volume" type="range" min="0" max="1" step="0.01" value="1" aria-label="Volume">
         </div>
@@ -56,7 +56,7 @@
           <div class="music-queue-head">
             <p class="music-queue-title" id="music-queue-title">Up Next</p>
             <button class="music-mini-btn" id="music-shuffle-btn" type="button" aria-label="Shuffle" title="Shuffle">
-              <img class="ui-icon" src="${iconBase}shuffle.svg" alt="" aria-hidden="true">
+              <img class="ui-icon" src="${iconBase}shuffle.webp" alt="" aria-hidden="true">
             </button>
           </div>
           <div class="music-queue-list" id="music-queue-list"></div>
