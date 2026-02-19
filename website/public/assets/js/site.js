@@ -52,7 +52,7 @@
   const musicMuteStorageKey = "site-music-muted";
   const musicStateStorageKey = "site-music-state";
   const musicAutoStartStorageKey = "site-music-autostart";
-  const isNestedPage = /\/(resources|credit|ninconvert)(\/|$)/i.test(window.location.pathname || "");
+  const isNestedPage = /\/(resources|credit|ninconvert|placeholder)(\/|$)/i.test(window.location.pathname || "");
   const assetRoot = isNestedPage ? "../assets/" : "assets/";
   const iconBasePath = `${assetRoot}images/icons/`;
   const musicBasePath = `${assetRoot}Musics/`;
@@ -62,13 +62,15 @@
     information: "Website",
     ressources: "Resources",
     credit: "Credit",
-    ninconvert: "NinConvert"
+    ninconvert: "NinConvert",
+    placeholder: "Placeholder"
   };
   const tabTitleByPage = {
     information: "Home",
     ressources: "Resources",
     credit: "Credit",
-    ninconvert: "NinConvert"
+    ninconvert: "NinConvert",
+    placeholder: "Placeholder"
   };
   const pathToPage = {
     "index.html": "information",
@@ -77,7 +79,9 @@
     "credit": "credit",
     "credit.html": "credit",
     "ninconvert": "ninconvert",
-    "ninconvert.html": "ninconvert"
+    "ninconvert.html": "ninconvert",
+    "placeholder": "placeholder",
+    "placeholder.html": "placeholder"
   };
 
   const defaultCoverSrc = musicCover ? musicCover.src : fallbackCoverSrc;
@@ -1223,8 +1227,9 @@
       ["#resources-filter-other", t.resourcesFilterOther],
       ["#resources-catalog-title", t.resourcesCatalogTitle],
       ["#resources-empty", t.resourcesEmpty],
-      ["#tool-placeholder-text", t.toolPlaceholderText],
-      ["#tool-placeholder-close", t.toolPlaceholderClose],
+      ["#placeholder-title", t.placeholderTitle],
+      ["#placeholder-text", t.placeholderText],
+      ["#placeholder-back", t.placeholderBack],
       ["#resources-card1-badge", t.resourcesCard1Badge],
       ["#resources-card1-title", t.resourcesCard1Title],
       ["#resources-card1-by", t.resourcesCard1By],

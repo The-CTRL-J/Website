@@ -30,8 +30,6 @@
     const grid = document.querySelector(".resource-card-grid");
     const searchInput = document.getElementById("resources-search");
     const emptyState = document.getElementById("resources-empty");
-    const placeholder = document.getElementById("tool-placeholder");
-    const placeholderCloseBtn = document.getElementById("tool-placeholder-close");
     if (!filterButtons.length || !cards.length || !grid) {
       return;
     }
@@ -43,28 +41,6 @@
     let activeFilter = (filterButtons.find((btn) => btn.classList.contains("active")) || filterButtons[0]).dataset.filter || "all";
     let lastSingleCardId = "";
     let lastVisibleCount = cards.length;
-
-    function closePlaceholder() {
-      if (!placeholder) {
-        return;
-      }
-      placeholder.hidden = true;
-      placeholder.classList.remove("is-open");
-    }
-
-    function openPlaceholder() {
-      if (!placeholder) {
-        return;
-      }
-      placeholder.hidden = false;
-      requestAnimationFrame(() => {
-        placeholder.classList.add("is-open");
-      });
-    }
-
-    if (placeholderCloseBtn) {
-      placeholderCloseBtn.addEventListener("click", closePlaceholder);
-    }
 
     function applyCornerPress(card, event) {
       const rect = card.getBoundingClientRect();
@@ -137,20 +113,9 @@
           card.classList.remove("is-jelly");
         }, 520);
 
-        const shouldUsePlaceholder = (card.dataset.placeholder || "").trim() === "1";
-        if (shouldUsePlaceholder) {
-          openPlaceholder();
-          return;
-        }
-
         const href = (card.dataset.link || "").trim();
         if (href) {
           window.location.href = href;
-          return;
-        }
-        const tag = (card.dataset.filterTag || "").toLowerCase();
-        if (tag === "other") {
-          openPlaceholder();
         }
       });
     });
@@ -305,8 +270,6 @@
       if (emptyState) {
         emptyState.hidden = nextVisible.length > 0;
       }
-
-      closePlaceholder();
     }
 
     filterButtons.forEach((button) => {

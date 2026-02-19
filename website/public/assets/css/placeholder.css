@@ -1,0 +1,66 @@
+.page {
+  min-height: calc(100vh - 220px);
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.page footer {
+  margin-top: auto;
+  padding: 18px 0 8px;
+}
+
+.placeholder-panel {
+  text-align: center;
+  border-radius: 20px;
+  background:
+    radial-gradient(900px 320px at 10% 10%, rgba(48, 148, 255, 0.18), transparent 60%),
+    radial-gradient(800px 280px at 90% 100%, rgba(34, 109, 255, 0.2), transparent 60%),
+    rgba(10, 16, 30, 0.64);
+}
+
+.placeholder-barrier {
+  width: 100%;
+  height: clamp(120px, 24vw, 220px);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      #101a31 0,
+      #101a31 32px,
+      #d9b739 32px,
+      #d9b739 64px
+    );
+}
+
+#placeholder-title {
+  margin: 18px 0 8px;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+}
+
+#placeholder-text {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(1rem, 2.3vw, 1.2rem);
+}
+
+.placeholder-back {
+  margin: 16px auto 0;
+  display: inline-flex;
+  text-decoration: none;
+}
+
+:root[data-theme="light"] .placeholder-panel {
+  background:
+    radial-gradient(900px 320px at 10% 10%, rgba(48, 148, 255, 0.14), transparent 60%),
+    radial-gradient(800px 280px at 90% 100%, rgba(34, 109, 255, 0.16), transparent 60%),
+    rgba(244, 248, 255, 0.78);
+}
+
+:root[data-theme="light"] .placeholder-barrier {
+  border-color: rgba(30, 51, 86, 0.24);
+}
