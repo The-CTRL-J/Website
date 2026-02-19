@@ -1241,6 +1241,8 @@
       ["#ninconvert-subtitle", t.ninconvertSubtitle],
       ["#ninconvert-meta", t.ninconvertMeta],
       ["#nin-file-label", t.ninFileLabel],
+      ["#nin-dropzone-title", t.ninDropzoneTitle],
+      ["#nin-dropzone-sub", t.ninDropzoneSub],
       ["#nin-format-label", t.ninFormatLabel],
       ["#nin-loop-toggle-label", t.ninLoopToggleLabel],
       ["#nin-loop-start-label", t.ninLoopStartLabel],

@@ -15,15 +15,12 @@ const MAX_FILE_MB = toPositiveInt(process.env.MAX_FILE_MB, 100);
 const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
 const CORS_ORIGIN = buildCorsOrigin(process.env.CORS_ORIGIN);
 const FFMPEG_PATH = process.env.FFMPEG_PATH || ffmpegStatic || "ffmpeg";
-const VGMSTREAM_PATH = process.env.VGMSTREAM_PATH || "vgmstream-cli";
 
 const TEMP_ROOT = path.resolve(process.cwd(), "tmp");
 const INCOMING_DIR = path.join(TEMP_ROOT, "incoming");
 const WORK_DIR = path.join(TEMP_ROOT, "work");
 
-const AUDIO_INPUT_EXTENSIONS = new Set([".wav", ".mp3", ".ogg"]);
-const NINTENDO_INPUT_EXTENSIONS = new Set([".brstm", ".bcstm", ".bfstm", ".bwav", ".bcwav", ".bfwav"]);
-const ALLOWED_INPUT_EXTENSIONS = new Set([...AUDIO_INPUT_EXTENSIONS, ...NINTENDO_INPUT_EXTENSIONS]);
+const ALLOWED_INPUT_EXTENSIONS = new Set([".wav", ".mp3", ".ogg"]);
 const ALLOWED_FORMATS = new Set(["brstm", "bcstm", "bfstm", "bwav", "bcwav", "bfwav"]);
 
 const ENCODER_COMMANDS = {
@@ -59,7 +56,6 @@ app.get("/health", (_req, res) => {
     ok: true,
     service: "ninconvert-backend",
     ffmpegPath: FFMPEG_PATH,
-    vgmstreamPath: VGMSTREAM_PATH,
     maxFileMb: MAX_FILE_MB,
     formats: [...ALLOWED_FORMATS],
     encodersConfigured: Object.fromEntries(
@@ -80,7 +76,7 @@ app.post("/convert", upload.single("audio"), async (req, res) => {
     const inputExt = path.extname(req.file.originalname || "").toLowerCase();
     if (!ALLOWED_INPUT_EXTENSIONS.has(inputExt)) {
       res.status(400).type("text/plain").send(
-        "Unsupported input file type. Allowed: .wav, .mp3, .ogg, .brstm, .bcstm, .bfstm, .bwav, .bcwav, .bfwav"
+        "Unsupported input file type. Allowed: .wav, .mp3, .ogg"
       );
       return;
     }
@@ -106,7 +102,7 @@ app.post("/convert", upload.single("audio"), async (req, res) => {
     const normalizedWavPath = path.join(WORK_DIR, `${jobId}.normalized.wav`);
     cleanupTargets.push(sourcePath, normalizedWavPath);
 
-    await normalizeInputToWav(sourcePath, normalizedWavPath, inputExt);
+    await normalizeInputToWav(sourcePath, normalizedWavPath);
 
     const encoderCommand = ENCODER_COMMANDS[targetFormat];
     if (!encoderCommand) {
@@ -219,16 +215,7 @@ function normalizeErrorMessage(error) {
   return fallback;
 }
 
-async function normalizeInputToWav(inputPath, outputPath, inputExt) {
-  if (NINTENDO_INPUT_EXTENSIONS.has(inputExt)) {
-    await runProcess(VGMSTREAM_PATH, [
-      "-o",
-      outputPath,
-      inputPath
-    ]);
-    return;
-  }
-
+async function normalizeInputToWav(inputPath, outputPath) {
   await runProcess(FFMPEG_PATH, [
     "-y",
     "-i",

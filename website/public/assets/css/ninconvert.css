@@ -34,6 +34,11 @@
   width: 100%;
 }
 
+.nin-row select option {
+  background: #1f232b;
+  color: #f0f3f8;
+}
+
 .nin-dropzone {
   border: 1px dashed rgba(113, 232, 255, 0.55);
   border-radius: 10px;
@@ -296,6 +301,19 @@
 
 :root[data-theme="light"] .nin-meta {
   color: #2f6fbe;
+}
+
+:root[data-theme="dark"] .nin-row select {
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] .nin-row select {
+  color-scheme: light;
+}
+
+:root[data-theme="light"] .nin-row select option {
+  background: #ffffff;
+  color: #24292f;
 }
 
 :root[data-theme="light"] .nin-loop {

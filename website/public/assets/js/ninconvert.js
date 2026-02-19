@@ -32,13 +32,7 @@
   const allowedInputExtensions = new Set([
     "wav",
     "mp3",
-    "ogg",
-    "brstm",
-    "bcstm",
-    "bfstm",
-    "bwav",
-    "bcwav",
-    "bfwav"
+    "ogg"
   ]);
 
   function getCurrentTranslation() {
@@ -256,7 +250,7 @@
     }
 
     if (!isSupportedInputFile(file)) {
-      setStatus("Format non supporte. Utilise WAV, MP3, OGG, BRSTM, BCSTM, BFSTM, BWAV, BCWAV ou BFWAV.", true);
+      setStatus(tr("ninStatusUnsupportedInput", "Format non supporte. Utilise WAV, MP3 ou OGG."), true);
       return;
     }
 

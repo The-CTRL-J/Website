@@ -6,7 +6,7 @@ Request:
 
 - Content-Type: `multipart/form-data`
 - Fields:
-  - `audio`: file (`.wav`, `.mp3`, `.ogg`, `.brstm`, `.bcstm`, `.bfstm`, `.bwav`, `.bcwav`, `.bfwav`)
+  - `audio`: file (`.wav`, `.mp3`, `.ogg`)
   - `format`: `brstm|bcstm|bfstm|bwav|bcwav|bfwav`
   - `loopEnabled`: `0|1`
   - `loopStart`: integer (samples)
