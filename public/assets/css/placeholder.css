@@ -59,6 +59,34 @@
   margin: 16px auto 0;
   display: inline-flex;
   text-decoration: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 9px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(83, 168, 255, 0.5);
+  background: linear-gradient(180deg, rgba(91, 183, 255, 0.28), rgba(43, 132, 255, 0.18));
+  color: #d8ebff;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(13, 29, 54, 0.42);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.placeholder-back:hover {
+  transform: translateY(-1px);
+  border-color: rgba(111, 191, 255, 0.85);
+  background: linear-gradient(180deg, rgba(97, 189, 255, 0.36), rgba(52, 144, 255, 0.24));
+  box-shadow: 0 12px 22px rgba(13, 29, 54, 0.5);
+}
+
+.placeholder-back:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(13, 29, 54, 0.42);
+}
+
+.placeholder-back:focus-visible {
+  outline: 2px solid rgba(95, 184, 255, 0.85);
+  outline-offset: 2px;
 }
 
 :root[data-theme="light"] .placeholder-panel {
@@ -70,4 +98,11 @@
 
 :root[data-theme="light"] .placeholder-barrier {
   border-color: rgba(30, 51, 86, 0.24);
+}
+
+:root[data-theme="light"] .placeholder-back {
+  border-color: rgba(44, 103, 180, 0.36);
+  background: linear-gradient(180deg, rgba(109, 173, 245, 0.34), rgba(76, 142, 233, 0.22));
+  color: #1a3658;
+  box-shadow: 0 10px 20px rgba(32, 66, 112, 0.2);
 }
