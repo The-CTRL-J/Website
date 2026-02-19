@@ -5,14 +5,13 @@ Ce projet est actuellement en phase de construction.
 
 ## Structure
 
-- `website/`: source de travail
+- `website/`: source du site
 - `website/src/`: pages HTML source (`index`, `resources`, `credit`, `ninconvert`)
-- `website/public/`: assets source (`assets/...`)
-- `assets/`, `index.html`, `resources/`, `credit/`, `ninconvert/`: version publiee GitHub Pages (root)
-- `website/dist/`: build de production (genere)
+- `website/public/`: assets statiques (`assets/...`)
+- `website/dist/`: build de production (genere par Vite)
 - `nodejs/`: environnement local Node/Vite (local uniquement, ignore pour GitHub)
 - `backend/`: API locale NinConvert (`/health`, `/convert`)
-- `tools/`: scripts de sync/verification de structure
+- `.github/workflows/deploy-pages.yml`: deploiement GitHub Pages automatique via Actions
 
 ## License
 
@@ -26,5 +25,9 @@ Ce projet est actuellement en phase de construction.
 - Debug (fenetre ouverte): `start-local-debug.bat`
 - Lancer backend NinConvert: `start-ninconvert-backend.bat`
 - Important: ne pas ouvrir `website/src/*.html` en `file://`.
-- Sync source -> publication root: `powershell -ExecutionPolicy Bypass -File tools/sync-publish.ps1`
-- Verifier structure source/publication: `powershell -ExecutionPolicy Bypass -File tools/verify-structure.ps1`
+
+## GitHub Pages
+
+- Le deploy se fait par GitHub Actions (workflow `Deploy Website`).
+- Source unique: `website/src` + `website/public`.
+- Pour activer: dans GitHub > Settings > Pages > Build and deployment > Source = `GitHub Actions`.

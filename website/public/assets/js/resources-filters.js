@@ -137,6 +137,12 @@
           card.classList.remove("is-jelly");
         }, 520);
 
+        const shouldUsePlaceholder = (card.dataset.placeholder || "").trim() === "1";
+        if (shouldUsePlaceholder) {
+          openPlaceholder();
+          return;
+        }
+
         const href = (card.dataset.link || "").trim();
         if (href) {
           window.location.href = href;
