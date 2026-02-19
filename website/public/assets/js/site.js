@@ -850,12 +850,6 @@
       return;
     }
 
-    const source = musicAudio.querySelector("source");
-    const currentUrl = source ? source.getAttribute("src") : musicAudio.currentSrc;
-    if (pendingAutoplayUrl && currentUrl && pendingAutoplayUrl !== currentUrl) {
-      return;
-    }
-
     playMusicWithFadeIn().then((played) => {
       if (played) {
         pendingAutoplay = false;
@@ -1514,7 +1508,10 @@
   });
 
   if (musicAudio) {
-    musicAudio.addEventListener("loadedmetadata", syncMusicUi);
+    musicAudio.addEventListener("loadedmetadata", () => {
+      syncMusicUi();
+      tryPendingAutoplay();
+    });
     musicAudio.addEventListener("canplay", tryPendingAutoplay);
     musicAudio.addEventListener("durationchange", syncMusicUi);
     musicAudio.addEventListener("timeupdate", syncMusicUi);
@@ -1523,6 +1520,7 @@
       if (track) {
         brokenTrackUrls.delete(track.url);
       }
+      tryPendingAutoplay();
     });
     musicAudio.addEventListener("play", updatePlayButtonLabel);
     musicAudio.addEventListener("pause", updatePlayButtonLabel);
@@ -1615,6 +1613,10 @@
   }
 
   if (musicAudio) {
+    if (localStorage.getItem(musicAutoStartStorageKey) === null) {
+      localStorage.setItem(musicAutoStartStorageKey, "1");
+    }
+
     const savedVolume = Number(localStorage.getItem(musicVolumeStorageKey));
     if (Number.isFinite(savedVolume) && savedVolume >= 0 && savedVolume <= 1) {
       musicDesiredVolume = clampVolume(savedVolume);

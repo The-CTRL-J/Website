@@ -15,12 +15,15 @@ const MAX_FILE_MB = toPositiveInt(process.env.MAX_FILE_MB, 100);
 const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
 const CORS_ORIGIN = buildCorsOrigin(process.env.CORS_ORIGIN);
 const FFMPEG_PATH = process.env.FFMPEG_PATH || ffmpegStatic || "ffmpeg";
+const VGMSTREAM_PATH = process.env.VGMSTREAM_PATH || "vgmstream-cli";
 
 const TEMP_ROOT = path.resolve(process.cwd(), "tmp");
 const INCOMING_DIR = path.join(TEMP_ROOT, "incoming");
 const WORK_DIR = path.join(TEMP_ROOT, "work");
 
-const ALLOWED_INPUT_EXTENSIONS = new Set([".wav", ".mp3", ".ogg"]);
+const AUDIO_INPUT_EXTENSIONS = new Set([".wav", ".mp3", ".ogg"]);
+const NINTENDO_INPUT_EXTENSIONS = new Set([".brstm", ".bcstm", ".bfstm", ".bwav", ".bcwav", ".bfwav"]);
+const ALLOWED_INPUT_EXTENSIONS = new Set([...AUDIO_INPUT_EXTENSIONS, ...NINTENDO_INPUT_EXTENSIONS]);
 const ALLOWED_FORMATS = new Set(["brstm", "bcstm", "bfstm", "bwav", "bcwav", "bfwav"]);
 
 const ENCODER_COMMANDS = {
@@ -56,6 +59,7 @@ app.get("/health", (_req, res) => {
     ok: true,
     service: "ninconvert-backend",
     ffmpegPath: FFMPEG_PATH,
+    vgmstreamPath: VGMSTREAM_PATH,
     maxFileMb: MAX_FILE_MB,
     formats: [...ALLOWED_FORMATS],
     encodersConfigured: Object.fromEntries(
@@ -75,7 +79,9 @@ app.post("/convert", upload.single("audio"), async (req, res) => {
 
     const inputExt = path.extname(req.file.originalname || "").toLowerCase();
     if (!ALLOWED_INPUT_EXTENSIONS.has(inputExt)) {
-      res.status(400).type("text/plain").send("Unsupported input file type. Allowed: .wav, .mp3, .ogg");
+      res.status(400).type("text/plain").send(
+        "Unsupported input file type. Allowed: .wav, .mp3, .ogg, .brstm, .bcstm, .bfstm, .bwav, .bcwav, .bfwav"
+      );
       return;
     }
 
@@ -100,44 +106,39 @@ app.post("/convert", upload.single("audio"), async (req, res) => {
     const normalizedWavPath = path.join(WORK_DIR, `${jobId}.normalized.wav`);
     cleanupTargets.push(sourcePath, normalizedWavPath);
 
-    await normalizeToWav(sourcePath, normalizedWavPath);
+    await normalizeInputToWav(sourcePath, normalizedWavPath, inputExt);
 
     const encoderCommand = ENCODER_COMMANDS[targetFormat];
-    let outputPath = path.join(WORK_DIR, `${jobId}.${targetFormat}`);
-    let outputName = `${safeBaseName}.${targetFormat}`;
-    let usedFallback = false;
-
-    if (encoderCommand) {
-      cleanupTargets.push(outputPath);
-      await runTemplateCommand(encoderCommand, {
-        input: normalizedWavPath,
-        output: outputPath,
-        format: targetFormat,
-        loopEnabled: loopEnabled ? "1" : "0",
-        loopStart: String(loopStart),
-        loopEnd: String(loopEnd)
-      });
-      await ensureFileExists(outputPath, "Encoder command did not generate output file");
-    } else {
-      outputPath = path.join(WORK_DIR, `${jobId}.wav`);
-      outputName = `${safeBaseName}.wav`;
-      cleanupTargets.push(outputPath);
-      usedFallback = true;
-      await fs.copyFile(normalizedWavPath, outputPath);
+    if (!encoderCommand) {
+      res.status(501).type("text/plain").send(
+        [
+          `No Nintendo encoder configured for format: ${targetFormat}.`,
+          "Configure NINCONVERT_<FORMAT>_CMD in backend/.env (or environment).",
+          "Example placeholder command: NINCONVERT_BRSTM_CMD=\"<your-tool> {input} {output}\""
+        ].join("\n")
+      );
+      return;
     }
+
+    const outputPath = path.join(WORK_DIR, `${jobId}.${targetFormat}`);
+    const outputName = `${safeBaseName}.${targetFormat}`;
+    cleanupTargets.push(outputPath);
+
+    await runTemplateCommand(encoderCommand, {
+      input: normalizedWavPath,
+      output: outputPath,
+      format: targetFormat,
+      loopEnabled: loopEnabled ? "1" : "0",
+      loopStart: String(loopStart),
+      loopEnd: String(loopEnd)
+    });
+    await ensureFileExists(outputPath, "Encoder command did not generate output file");
 
     const stat = await fs.stat(outputPath);
     res.setHeader("Content-Type", "application/octet-stream");
     res.setHeader("Content-Disposition", `attachment; filename="${outputName}"`);
     res.setHeader("Content-Length", String(stat.size));
     res.setHeader("X-NinConvert-Requested-Format", targetFormat);
-
-    if (usedFallback) {
-      res.setHeader(
-        "X-NinConvert-Notice",
-        `No encoder configured for ${targetFormat}. Returned normalized WAV fallback.`
-      );
-    }
 
     const stream = createReadStream(outputPath);
     stream.on("error", async () => {
@@ -218,7 +219,16 @@ function normalizeErrorMessage(error) {
   return fallback;
 }
 
-async function normalizeToWav(inputPath, outputPath) {
+async function normalizeInputToWav(inputPath, outputPath, inputExt) {
+  if (NINTENDO_INPUT_EXTENSIONS.has(inputExt)) {
+    await runProcess(VGMSTREAM_PATH, [
+      "-o",
+      outputPath,
+      inputPath
+    ]);
+    return;
+  }
+
   await runProcess(FFMPEG_PATH, [
     "-y",
     "-i",

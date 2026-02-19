@@ -5,6 +5,7 @@
   }
 
   const fileInput = document.getElementById("nin-file");
+  const dropzone = document.getElementById("nin-dropzone");
   const formatInput = document.getElementById("nin-format");
   const loopEnabledInput = document.getElementById("nin-loop-enabled");
   const loopStartInput = document.getElementById("nin-loop-start");
@@ -28,6 +29,17 @@
   let sourceSampleRate = 48000;
   let loopPreviewEnabled = false;
   let audioContext = null;
+  const allowedInputExtensions = new Set([
+    "wav",
+    "mp3",
+    "ogg",
+    "brstm",
+    "bcstm",
+    "bfstm",
+    "bwav",
+    "bcwav",
+    "bfwav"
+  ]);
 
   function getCurrentTranslation() {
     const rawChoice = localStorage.getItem("site-lang") || "system";
@@ -43,15 +55,29 @@
     return value || fallback;
   }
 
+  function isLoopbackHost(host) {
+    return host === "localhost" || host === "127.0.0.1";
+  }
+
+  function isLoopbackUrl(urlValue) {
+    try {
+      const parsed = new URL(urlValue);
+      return isLoopbackHost(parsed.hostname);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  const host = window.location.hostname || "";
+  const isCurrentHostLocal = isLoopbackHost(host);
   const savedApi = localStorage.getItem(storageKey);
   if (savedApi && apiUrlInput) {
-    apiUrlInput.value = savedApi;
-  } else if (apiUrlInput) {
-    const host = window.location.hostname || "";
-    const isLocalHost = host === "localhost" || host === "127.0.0.1";
-    if (isLocalHost) {
-      apiUrlInput.value = `${window.location.protocol}//${host}:8787`;
+    const shouldIgnoreSavedLocalhost = !isCurrentHostLocal && isLoopbackUrl(savedApi);
+    if (!shouldIgnoreSavedLocalhost) {
+      apiUrlInput.value = savedApi;
     }
+  } else if (apiUrlInput && isCurrentHostLocal) {
+    apiUrlInput.value = `${window.location.protocol}//${host}:8787`;
   }
 
   function setStatus(message, isError = false) {
@@ -199,32 +225,107 @@
     updatePreviewMeta();
   }
 
+  function getFileExtension(name) {
+    const value = String(name || "").toLowerCase();
+    const index = value.lastIndexOf(".");
+    return index >= 0 ? value.slice(index + 1) : "";
+  }
+
+  function isSupportedInputFile(file) {
+    if (!file) {
+      return false;
+    }
+    return allowedInputExtensions.has(getFileExtension(file.name));
+  }
+
+  async function applySelectedFile(file) {
+    if (!sourceAudio) {
+      return;
+    }
+
+    if (!file) {
+      if (sourceObjectUrl) {
+        URL.revokeObjectURL(sourceObjectUrl);
+        sourceObjectUrl = "";
+      }
+      sourceAudio.removeAttribute("src");
+      sourceAudio.load();
+      updatePreviewMeta();
+      updateCustomPlayerUi();
+      return;
+    }
+
+    if (!isSupportedInputFile(file)) {
+      setStatus("Format non supporte. Utilise WAV, MP3, OGG, BRSTM, BCSTM, BFSTM, BWAV, BCWAV ou BFWAV.", true);
+      return;
+    }
+
+    if (sourceObjectUrl) {
+      URL.revokeObjectURL(sourceObjectUrl);
+    }
+    sourceObjectUrl = URL.createObjectURL(file);
+    sourceAudio.src = sourceObjectUrl;
+    sourceAudio.load();
+    sourceAudio.currentTime = 0;
+
+    await detectSampleRate(file);
+    updatePreviewMeta();
+    updateCustomPlayerUi();
+    setStatus(tr("ninStatusIdle", "En attente d'un fichier."));
+  }
+
   if (fileInput && sourceAudio) {
     fileInput.addEventListener("change", async () => {
       const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
-      if (!file) {
-        if (sourceObjectUrl) {
-          URL.revokeObjectURL(sourceObjectUrl);
-          sourceObjectUrl = "";
+      await applySelectedFile(file);
+    });
+  }
+
+  if (dropzone && fileInput) {
+    const stopEvent = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    ["dragenter", "dragover"].forEach((eventName) => {
+      dropzone.addEventListener(eventName, (event) => {
+        stopEvent(event);
+        dropzone.classList.add("is-dragover");
+      });
+    });
+
+    ["dragleave", "dragend", "drop"].forEach((eventName) => {
+      dropzone.addEventListener(eventName, (event) => {
+        stopEvent(event);
+        if (eventName !== "drop") {
+          dropzone.classList.remove("is-dragover");
         }
-        sourceAudio.removeAttribute("src");
-        sourceAudio.load();
-        updatePreviewMeta();
-        updateCustomPlayerUi();
+      });
+    });
+
+    dropzone.addEventListener("drop", async (event) => {
+      dropzone.classList.remove("is-dragover");
+      const files = event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files : null;
+      const file = files && files[0] ? files[0] : null;
+      if (!file) {
         return;
       }
 
-      if (sourceObjectUrl) {
-        URL.revokeObjectURL(sourceObjectUrl);
-      }
-      sourceObjectUrl = URL.createObjectURL(file);
-      sourceAudio.src = sourceObjectUrl;
-      sourceAudio.load();
-      sourceAudio.currentTime = 0;
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      fileInput.files = dataTransfer.files;
+      await applySelectedFile(file);
+    });
 
-      await detectSampleRate(file);
-      updatePreviewMeta();
-      updateCustomPlayerUi();
+    dropzone.addEventListener("click", () => {
+      fileInput.click();
+    });
+
+    dropzone.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        fileInput.click();
+      }
     });
   }
 

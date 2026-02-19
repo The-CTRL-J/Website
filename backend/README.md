@@ -6,9 +6,11 @@ Backend API for `website/src/ninconvert/index.html`.
 
 - `GET /health`: backend health check.
 - `POST /convert`: upload + convert endpoint (multipart/form-data).
-- Input support: `.mp3`, `.wav`, `.ogg`.
+- Input support: `.mp3`, `.wav`, `.ogg`, `.brstm`, `.bcstm`, `.bfstm`, `.bwav`, `.bcwav`, `.bfwav`.
 - Loop fields accepted and validated (`loopEnabled`, `loopStart`, `loopEnd`).
-- If no Nintendo encoder is configured for requested format, backend returns a normalized WAV fallback.
+- Nintendo input files (`.brstm/.bcstm/.bfstm/.bwav/.bcwav/.bfwav`) are decoded with `vgmstream` to WAV first.
+- Nintendo output generation is done only by configured encoder commands (`NINCONVERT_<FORMAT>_CMD`).
+- If no encoder command is configured for requested output format, API returns `501` (no fake WAV fallback).
 
 ## Setup
 
@@ -35,7 +37,8 @@ Then click `Convert`.
 Copy `.env.example` and set variables if needed:
 
 - `PORT`, `HOST`, `MAX_FILE_MB`
-- `FFMPEG_PATH` (optional custom ffmpeg path)
+- `FFMPEG_PATH` (optional custom ffmpeg path, used for `.wav/.mp3/.ogg` inputs)
+- `VGMSTREAM_PATH` (optional custom vgmstream path, used to decode Nintendo inputs)
 - `CORS_ORIGIN` (optional)
 - `NINCONVERT_<FORMAT>_CMD` for real encoders:
   - `NINCONVERT_BRSTM_CMD`

@@ -5,12 +5,14 @@ Ce projet est actuellement en phase de construction.
 
 ## Structure
 
-- `website/`: code du site
+- `website/`: source de travail
 - `website/src/`: pages HTML source (`index`, `resources`, `credit`, `ninconvert`)
-- `website/public/`: assets statiques (`assets/...`)
+- `website/public/`: assets source (`assets/...`)
+- `assets/`, `index.html`, `resources/`, `credit/`, `ninconvert/`: version publiee GitHub Pages (root)
 - `website/dist/`: build de production (genere)
 - `nodejs/`: environnement local Node/Vite (local uniquement, ignore pour GitHub)
 - `backend/`: API locale NinConvert (`/health`, `/convert`)
+- `tools/`: scripts de sync/verification de structure
 
 ## License
 
@@ -24,3 +26,5 @@ Ce projet est actuellement en phase de construction.
 - Debug (fenetre ouverte): `start-local-debug.bat`
 - Lancer backend NinConvert: `start-ninconvert-backend.bat`
 - Important: ne pas ouvrir `website/src/*.html` en `file://`.
+- Sync source -> publication root: `powershell -ExecutionPolicy Bypass -File tools/sync-publish.ps1`
+- Verifier structure source/publication: `powershell -ExecutionPolicy Bypass -File tools/verify-structure.ps1`

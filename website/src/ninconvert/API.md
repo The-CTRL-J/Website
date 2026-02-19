@@ -6,7 +6,7 @@ Request:
 
 - Content-Type: `multipart/form-data`
 - Fields:
-  - `audio`: file (`.wav`, `.mp3`, `.ogg`)
+  - `audio`: file (`.wav`, `.mp3`, `.ogg`, `.brstm`, `.bcstm`, `.bfstm`, `.bwav`, `.bcwav`, `.bfwav`)
   - `format`: `brstm|bcstm|bfstm|bwav|bcwav|bfwav`
   - `loopEnabled`: `0|1`
   - `loopStart`: integer (samples)
@@ -24,3 +24,8 @@ Response (error):
 
 - Status `4xx|5xx`
 - Body: plain text error message
+
+Notes:
+
+- Nintendo output formats require backend encoder commands (`NINCONVERT_<FORMAT>_CMD`).
+- If encoder command is not configured for requested format, API returns `501`.
