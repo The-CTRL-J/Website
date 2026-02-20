@@ -1,6 +1,10 @@
 ﻿(() => {
-  const isNestedPage = /\/(resources|credit|ninconvert)(\/|$)/i.test(window.location.pathname || "");
-  const assetRoot = isNestedPage ? "../assets/" : "assets/";
+  const explicitAssetRoot = (document.body && document.body.dataset ? (document.body.dataset.assetRoot || "") : "").trim();
+  const pathName = window.location.pathname || "";
+  const isDeepNestedPage = /\/resources\/ninconvert(\/|$)/i.test(pathName);
+  const isNestedPage = /\/(resources|credit|ninconvert|placeholder)(\/|$)/i.test(pathName);
+  const inferredAssetRoot = isDeepNestedPage ? "../../assets/" : (isNestedPage ? "../assets/" : "assets/");
+  const assetRoot = explicitAssetRoot || inferredAssetRoot;
   const basePath = `${assetRoot}Musics/`;
   const placeholderCover = `${assetRoot}images/album-placeholder.svg`;
 
@@ -19,8 +23,8 @@
     },
     {
       file: "PlasticSixwall.mp3",
-      title: "PlasticSixwall",
-      artist: "CTRL_J",
+      title: "≧◡≦",
+      artist: "PlasticSixwall",
       cover: placeholderCover
     },
     {
@@ -32,9 +36,16 @@
     {
       file: "Sherbet Lobby - bxnji.mp3",
       title: "Sherbet Lobby",
-      artist: "bxnji",
-      cover: placeholderCover
+      artist: "Nicopatty - bxnji",
+      cover: `${basePath}covers/yume-nikki-madotsuki.gif`
+    },
+    {
+      file: "FALL! (Slowed)_audio only.mp3",
+      title: "FALL ! (SLowed)",
+      artist: "6IXXTY",
+      cover: `${basePath}covers/FALL! (Slowed).jpg`
     }
+    
   ];
 
   async function readPlaylistJson() {
@@ -53,11 +64,6 @@
   window.SITE_MUSIC_PLAYLIST = { tracks: fallbackTracks };
 
   window.SITE_MUSIC_PLAYLIST_READY = (async () => {
-    if (window.location.protocol === "file:") {
-      window.SITE_MUSIC_PLAYLIST.tracks = fallbackTracks;
-      return fallbackTracks;
-    }
-
     const jsonTracks = await readPlaylistJson();
     const tracks = jsonTracks.length ? jsonTracks : fallbackTracks;
     window.SITE_MUSIC_PLAYLIST.tracks = tracks;

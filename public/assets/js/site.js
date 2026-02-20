@@ -52,8 +52,9 @@
   const musicMuteStorageKey = "site-music-muted";
   const musicStateStorageKey = "site-music-state";
   const musicAutoStartStorageKey = "site-music-autostart";
+  const explicitAssetRoot = (document.body.dataset.assetRoot || "").trim();
   const isNestedPage = /\/(resources|credit|ninconvert|placeholder)(\/|$)/i.test(window.location.pathname || "");
-  const assetRoot = isNestedPage ? "../assets/" : "assets/";
+  const assetRoot = explicitAssetRoot || (isNestedPage ? "../assets/" : "assets/");
   const iconBasePath = `${assetRoot}images/icons/`;
   const musicBasePath = `${assetRoot}Musics/`;
   const fallbackCoverSrc = `${assetRoot}images/album-placeholder.svg`;
@@ -62,15 +63,15 @@
     information: "Website",
     ressources: "Resources",
     credit: "Credit",
-    ninconvert: "NinConvert",
-    placeholder: "Placeholder"
+    ninconvert: "Resources/NinConvert",
+    placeholder: "Resources/Placeholder"
   };
   const tabTitleByPage = {
     information: "Home",
     ressources: "Resources",
     credit: "Credit",
-    ninconvert: "NinConvert",
-    placeholder: "Placeholder"
+    ninconvert: "Resources/NinConvert",
+    placeholder: "Resources/Placeholder"
   };
   const pathToPage = {
     "index.html": "information",
@@ -581,10 +582,14 @@
     if (!pathOrUrl || typeof pathOrUrl !== "string") {
       return "";
     }
-    if (isNestedPage && pathOrUrl.startsWith("assets/")) {
-      return `../${pathOrUrl}`;
+    const value = pathOrUrl.trim();
+    if (value.startsWith("assets/")) {
+      return `${assetRoot}${value.slice("assets/".length)}`;
     }
-    return pathOrUrl;
+    if (/^(\.\.\/)+assets\//.test(value)) {
+      return `${assetRoot}${value.replace(/^(\.\.\/)+assets\//, "")}`;
+    }
+    return value;
   }
 
   function filenameWithoutExtension(pathOrUrl) {
@@ -1120,6 +1125,25 @@
       return;
     }
 
+    if (force && currentBrandSuffix && targetSuffix.startsWith(currentBrandSuffix)) {
+      let writeIndex = currentBrandSuffix.length;
+      brandTitle.textContent = `${brandPrefix}${currentBrandSuffix}`;
+
+      function appendStep() {
+        writeIndex += 1;
+        brandTitle.textContent = `${brandPrefix}${targetSuffix.slice(0, writeIndex)}`;
+        if (writeIndex < targetSuffix.length) {
+          brandTypeTimer = setTimeout(appendStep, 34);
+          return;
+        }
+
+        currentBrandSuffix = targetSuffix;
+      }
+
+      brandTypeTimer = setTimeout(appendStep, 34);
+      return;
+    }
+
     let editable = currentBrandSuffix;
     let writeIndex = 0;
 
@@ -1196,6 +1220,23 @@
       document.title = targetTitle;
       return;
     }
+
+    if (force && currentTitle && targetTitle.startsWith(currentTitle)) {
+      let writeIndex = currentTitle.length;
+      document.title = currentTitle;
+
+      function appendStep() {
+        writeIndex += 1;
+        document.title = targetTitle.slice(0, writeIndex);
+        if (writeIndex < targetTitle.length) {
+          tabTitleTimer = setTimeout(appendStep, 500);
+        }
+      }
+
+      tabTitleTimer = setTimeout(appendStep, 500);
+      return;
+    }
+
     let writeIndex = 0;
     document.title = "";
 
@@ -1290,7 +1331,12 @@
       ["#nin-dropzone-title", t.ninDropzoneTitle],
       ["#nin-dropzone-sub", t.ninDropzoneSub],
       ["#nin-format-label", t.ninFormatLabel],
+      ["#nin-channels-label", t.ninChannelsLabel],
+      ["#nin-sample-rate-label", t.ninSampleRateLabel],
       ["#nin-loop-toggle-label", t.ninLoopToggleLabel],
+      ["#nin-loop-mode-label", t.ninLoopModeLabel],
+      ["#nin-loop-mode-metadata-option", t.ninLoopModeMetadata],
+      ["#nin-loop-mode-trim-option", t.ninLoopModeTrim],
       ["#nin-loop-start-label", t.ninLoopStartLabel],
       ["#nin-loop-end-label", t.ninLoopEndLabel],
       ["#nin-source-preview-label", t.ninSourcePreviewLabel],

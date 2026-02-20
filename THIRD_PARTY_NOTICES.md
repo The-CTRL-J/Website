@@ -2,46 +2,51 @@
 
 This file tracks third-party software, libraries, and licenses used by the website and NinConvert stack.
 
-## Used now (frontend / current project)
+## Used now (website repo)
 
-1. DspTool
-- URL: https://github.com/Thealexbarney/DspTool
+### Frontend (static site)
+
+- No bundled third-party JS/CSS framework is currently shipped.
+- Static assets and custom scripts are project-owned.
+
+### Backend (NinConvert API)
+
+1. express
+- URL: https://github.com/expressjs/express
 - License: MIT
 
-2. libOgg
-- URL: https://xiph.org/downloads/
-- License: BSD-style
+2. cors
+- URL: https://github.com/expressjs/cors
+- License: MIT
 
-3. libVorbis
-- URL: https://xiph.org/downloads/
-- License: BSD-style
+3. multer
+- URL: https://github.com/expressjs/multer
+- License: MIT
 
-4. ogg decode example
-- Origin: Hermes / Tantric (as referenced by mu-wave)
-- License: BSD-style
+4. dotenv
+- URL: https://github.com/motdotla/dotenv
+- License: BSD-2-Clause
 
-5. mu-wave OSS reference page
-- URL: https://kazuki-4ys.github.io/web_apps/mu-wave/
-- Role: reference/inspiration for attribution sources
+5. ffmpeg-static
+- URL: https://github.com/eugeneware/ffmpeg-static
+- License: GPL-3.0-or-later
+- Note: downloads/ships an ffmpeg binary; ffmpeg license obligations apply.
 
-## Needed for backend (planned)
+## Locally used tools (not distributed in this repo)
 
-1. OpenRevolution
-- URL: https://github.com/ic-scm/openrevolution
-- License: GPL-3.0
-- Note: this is the main reason backend is planned as GPL-3.0.
+These tools may be used on a local machine for conversion workflows, but are not bundled in this repository:
 
-2. vgmstream
-- URL: https://github.com/vgmstream/vgmstream
-- License: mixed (check upstream `COPYING` and bundled dependencies)
-
-3. VGAudio
+1. VGAudioCli
 - URL: https://github.com/Thealexbarney/VGAudio
 - License: MIT
 
-4. FFmpeg (if used)
-- URL: https://www.ffmpeg.org/legal.html
-- License: LGPL or GPL depending build/options
+2. vgmstream-cli
+- URL: https://github.com/vgmstream/vgmstream
+- License: mixed (see upstream `COPYING` and dependencies)
+
+3. Nintendo SDK wave tools (local/private, not redistributed)
+- Examples: `ctr_WaveConverter32`, `NW4F_WaveConverter`
+- Status: proprietary SDK tools, intentionally not shipped in this repo.
 
 ## Maintenance
 

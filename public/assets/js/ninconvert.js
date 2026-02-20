@@ -6,13 +6,18 @@
 
   const fileInput = document.getElementById("nin-file");
   const dropzone = document.getElementById("nin-dropzone");
+  const dropzoneFileNode = document.getElementById("nin-dropzone-file");
   const formatInput = document.getElementById("nin-format");
+  const channelsInput = document.getElementById("nin-channels");
+  const sampleRateInput = document.getElementById("nin-sample-rate");
   const loopEnabledInput = document.getElementById("nin-loop-enabled");
   const loopStartInput = document.getElementById("nin-loop-start");
   const loopEndInput = document.getElementById("nin-loop-end");
   const sourceAudio = document.getElementById("nin-source-audio");
   const sourcePlayBtn = document.getElementById("nin-source-play-btn");
   const sourceSeek = document.getElementById("nin-source-seek");
+  const loopMarkerStart = document.getElementById("nin-loop-marker-start");
+  const loopMarkerEnd = document.getElementById("nin-loop-marker-end");
   const sourceTime = document.getElementById("nin-source-time");
   const previewMeta = document.getElementById("nin-preview-meta");
   const setLoopStartBtn = document.getElementById("nin-set-loop-start");
@@ -35,6 +40,10 @@
   let loopPreviewEnabled = false;
   let audioContext = null;
   let selectedInputFile = null;
+  let loopStartMarkerSet = false;
+  let loopEndMarkerSet = false;
+  let draggingLoopMarker = "";
+  const seekThumbWidthPx = 4;
   const allowedInputExtensions = new Set([
     "wav",
     "mp3",
@@ -86,6 +95,17 @@
     }
     statusNode.textContent = message;
     statusNode.style.color = isError ? "#ff9ca9" : "";
+  }
+
+  function setDropzoneFileName(fileName) {
+    if (!dropzoneFileNode) {
+      return;
+    }
+    if (!fileName) {
+      dropzoneFileNode.textContent = tr("ninDropzoneFileNone", "Aucun fichier selectionne.");
+      return;
+    }
+    dropzoneFileNode.textContent = `${tr("ninDropzoneFilePicked", "Fichier:")} ${fileName}`;
   }
 
   function setProgressVisible(visible) {
@@ -176,7 +196,13 @@
         if (status >= 200 && status < 300) {
           resolve({
             blob: responseBlob,
-            contentDisposition
+            contentDisposition,
+            wavChannels: xhr.getResponseHeader("x-ninconvert-wav-channels") || "",
+            wavSampleRate: xhr.getResponseHeader("x-ninconvert-wav-sample-rate") || "",
+            loopMode: xhr.getResponseHeader("x-ninconvert-loop-mode") || "",
+            encoderLoopArgs: xhr.getResponseHeader("x-ninconvert-encoder-loop-args") || "",
+            waveLoopEndMode: xhr.getResponseHeader("x-ninconvert-wave-loop-end-mode") || "",
+            loopEndMode: xhr.getResponseHeader("x-ninconvert-loop-end-mode") || ""
           });
           return;
         }
@@ -209,6 +235,147 @@
       start: Number.isFinite(start) && start >= 0 ? start : 0,
       end: Number.isFinite(end) && end >= 0 ? end : 0
     };
+  }
+
+  function updateLoopMarkerFlags() {
+    loopStartMarkerSet = Boolean(loopStartInput && loopStartInput.dataset.set === "1");
+    loopEndMarkerSet = Boolean(loopEndInput && loopEndInput.dataset.set === "1");
+  }
+
+  function clampNumber(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function getSeekGeometry() {
+    if (!sourceSeek) {
+      return null;
+    }
+    const seekWrap = sourceSeek.parentElement;
+    const wrapRect = seekWrap && typeof seekWrap.getBoundingClientRect === "function"
+      ? seekWrap.getBoundingClientRect()
+      : null;
+    const seekRect = typeof sourceSeek.getBoundingClientRect === "function"
+      ? sourceSeek.getBoundingClientRect()
+      : null;
+    const wrapWidth = Math.max(1, wrapRect ? wrapRect.width : (seekWrap ? (seekWrap.clientWidth || 1) : 1));
+    const seekWidth = Math.max(1, seekRect ? seekRect.width : (sourceSeek.clientWidth || sourceSeek.offsetWidth || 1));
+    const seekOffsetX = wrapRect && seekRect
+      ? clampNumber(seekRect.left - wrapRect.left, 0, wrapWidth)
+      : 0;
+    const thumbHalf = seekThumbWidthPx / 2;
+    const travel = Math.max(1, seekWidth - seekThumbWidthPx);
+
+    return {
+      seekWrap,
+      wrapRect,
+      wrapWidth,
+      seekWidth,
+      seekOffsetX,
+      thumbHalf,
+      travel
+    };
+  }
+
+  function getTimelineInfo() {
+    const duration = Number.isFinite(sourceAudio && sourceAudio.duration) ? sourceAudio.duration : 0;
+    if (duration <= 0 || !Number.isFinite(sourceSampleRate) || sourceSampleRate <= 0) {
+      return null;
+    }
+    const totalSamples = Math.max(1, Math.round(duration * sourceSampleRate));
+    return { duration, totalSamples };
+  }
+
+  function readLoopInputValue(input) {
+    const parsed = Number.parseInt(String(input && input.value ? input.value : "0"), 10);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+  }
+
+  function getSampleFromPointerClientX(clientX) {
+    const geometry = getSeekGeometry();
+    const timeline = getTimelineInfo();
+    if (!geometry || !timeline || !geometry.wrapRect) {
+      return null;
+    }
+
+    const seekLocalX = clientX - geometry.wrapRect.left - geometry.seekOffsetX;
+    const clampedLocalX = clampNumber(seekLocalX, 0, geometry.seekWidth);
+    const ratio = geometry.seekWidth > 0 ? (clampedLocalX / geometry.seekWidth) : 0;
+    const sample = Math.round(ratio * timeline.totalSamples);
+
+    return {
+      sample: clampNumber(sample, 0, timeline.totalSamples - 1),
+      totalSamples: timeline.totalSamples
+    };
+  }
+
+  function applyDraggedLoopMarker(markerName, sample, totalSamples) {
+    if (!loopStartInput || !loopEndInput) {
+      return;
+    }
+
+    const maxSample = Math.max(0, totalSamples - 1);
+
+    if (markerName === "start") {
+      let startSample = clampNumber(sample, 0, maxSample);
+      const endSample = readLoopInputValue(loopEndInput);
+      if (loopEndMarkerSet) {
+        startSample = Math.min(startSample, Math.max(0, endSample - 1));
+      }
+      loopStartInput.value = String(startSample);
+      loopStartInput.dataset.set = "1";
+      loopStartMarkerSet = true;
+    } else if (markerName === "end") {
+      let endSample = clampNumber(sample, 0, maxSample);
+      const startSample = readLoopInputValue(loopStartInput);
+      const minEndSample = loopStartMarkerSet ? Math.max(1, startSample + 1) : 1;
+      endSample = Math.max(minEndSample, endSample);
+      loopEndInput.value = String(endSample);
+      loopEndInput.dataset.set = "1";
+      loopEndMarkerSet = true;
+    } else {
+      return;
+    }
+
+    updatePreviewMeta();
+    updateLoopMarkers();
+  }
+
+  function handleLoopMarkerPointerMove(event) {
+    if (!draggingLoopMarker) {
+      return;
+    }
+    const timelinePointer = getSampleFromPointerClientX(event.clientX);
+    if (!timelinePointer) {
+      return;
+    }
+    event.preventDefault();
+    applyDraggedLoopMarker(draggingLoopMarker, timelinePointer.sample, timelinePointer.totalSamples);
+  }
+
+  function stopLoopMarkerDragging() {
+    if (!draggingLoopMarker) {
+      return;
+    }
+    draggingLoopMarker = "";
+    window.removeEventListener("pointermove", handleLoopMarkerPointerMove);
+    window.removeEventListener("pointerup", stopLoopMarkerDragging);
+    window.removeEventListener("pointercancel", stopLoopMarkerDragging);
+  }
+
+  function startLoopMarkerDragging(markerName, event) {
+    if (!markerName) {
+      return;
+    }
+    const timelinePointer = getSampleFromPointerClientX(event.clientX);
+    if (!timelinePointer) {
+      return;
+    }
+    event.preventDefault();
+    draggingLoopMarker = markerName;
+    applyDraggedLoopMarker(markerName, timelinePointer.sample, timelinePointer.totalSamples);
+    window.addEventListener("pointermove", handleLoopMarkerPointerMove);
+    window.addEventListener("pointerup", stopLoopMarkerDragging);
+    window.addEventListener("pointercancel", stopLoopMarkerDragging);
   }
 
   function getCurrentSamples() {
@@ -266,6 +433,54 @@
       const ratio = duration > 0 ? Math.min(1, Math.max(0, current / duration)) : 0;
       sourceSeek.value = String(Math.round(ratio * 1000));
     }
+    updateLoopMarkers();
+  }
+
+  function updateLoopMarkers() {
+    if (!loopMarkerStart || !loopMarkerEnd || !sourceAudio || !sourceSampleRate) {
+      return;
+    }
+
+    const duration = Number.isFinite(sourceAudio.duration) ? sourceAudio.duration : 0;
+    if (duration <= 0) {
+      loopMarkerStart.style.opacity = "0";
+      loopMarkerEnd.style.opacity = "0";
+      return;
+    }
+
+    const totalSamples = Math.max(1, Math.round(duration * sourceSampleRate));
+    const loop = getLoopSamples();
+    updateLoopMarkerFlags();
+
+    const startRatio = Math.max(0, Math.min(1, loop.start / totalSamples));
+    const endRatio = Math.max(0, Math.min(1, loop.end / totalSamples));
+    const geometry = getSeekGeometry();
+    if (!geometry) {
+      loopMarkerStart.style.opacity = "0";
+      loopMarkerEnd.style.opacity = "0";
+      return;
+    }
+
+    const setMarkerPosition = (node, ratio, visible) => {
+      if (!node) {
+        return;
+      }
+      if (!visible) {
+        node.style.opacity = "0";
+        node.style.pointerEvents = "none";
+        return;
+      }
+      const pixelX = geometry.seekOffsetX + geometry.thumbHalf + (Math.max(0, Math.min(1, ratio)) * geometry.travel);
+      const clampedPixelX = clampNumber(pixelX, 0, geometry.wrapWidth);
+      const percentX = (clampedPixelX / geometry.wrapWidth) * 100;
+      node.style.left = `${percentX}%`;
+      node.style.transform = "translateX(-50%)";
+      node.style.opacity = "1";
+      node.style.pointerEvents = "auto";
+    };
+
+    setMarkerPosition(loopMarkerStart, startRatio, loopStartMarkerSet);
+    setMarkerPosition(loopMarkerEnd, endRatio, loopEndMarkerSet);
   }
 
   function enforceLoopPreview() {
@@ -331,6 +546,7 @@
 
     if (!file) {
       selectedInputFile = null;
+      setDropzoneFileName("");
       if (sourceObjectUrl) {
         URL.revokeObjectURL(sourceObjectUrl);
         sourceObjectUrl = "";
@@ -344,10 +560,12 @@
 
     if (!isSupportedInputFile(file)) {
       selectedInputFile = null;
+      setDropzoneFileName("");
       setStatus(tr("ninStatusUnsupportedInput", "Format non supporte. Utilise WAV, MP3 ou OGG."), true);
       return;
     }
     selectedInputFile = file;
+    setDropzoneFileName(file.name || "");
 
     if (sourceObjectUrl) {
       URL.revokeObjectURL(sourceObjectUrl);
@@ -360,6 +578,7 @@
     await detectSampleRate(file);
     updatePreviewMeta();
     updateCustomPlayerUi();
+    updateLoopMarkers();
     setStatus(tr("ninStatusIdle", "En attente d'un fichier."));
   }
 
@@ -486,15 +705,32 @@
     });
   }
 
+  if (loopMarkerStart) {
+    loopMarkerStart.addEventListener("pointerdown", (event) => {
+      startLoopMarkerDragging("start", event);
+    });
+  }
+
+  if (loopMarkerEnd) {
+    loopMarkerEnd.addEventListener("pointerdown", (event) => {
+      startLoopMarkerDragging("end", event);
+    });
+  }
+
   if (setLoopStartBtn) {
     setLoopStartBtn.addEventListener("click", () => {
       const sample = getCurrentSamples();
       loopStartInput.value = String(sample);
+      loopStartInput.dataset.set = "1";
+      loopStartMarkerSet = true;
       const loop = getLoopSamples();
       if (loop.end > 0 && loop.end < loop.start) {
         loopEndInput.value = String(loop.start);
+        loopEndInput.dataset.set = "1";
+        loopEndMarkerSet = true;
       }
       updatePreviewMeta();
+      updateLoopMarkers();
     });
   }
 
@@ -503,7 +739,10 @@
       const sample = getCurrentSamples();
       const loop = getLoopSamples();
       loopEndInput.value = String(Math.max(loop.start, sample));
+      loopEndInput.dataset.set = "1";
+      loopEndMarkerSet = true;
       updatePreviewMeta();
+      updateLoopMarkers();
     });
   }
 
@@ -521,12 +760,39 @@
     if (!input) {
       return;
     }
-    input.addEventListener("input", updatePreviewMeta);
+    input.addEventListener("input", () => {
+      input.dataset.set = String(String(input.value || "").trim().length > 0 ? 1 : 0);
+      loopStartMarkerSet = Boolean(loopStartInput && loopStartInput.dataset.set === "1");
+      loopEndMarkerSet = Boolean(loopEndInput && loopEndInput.dataset.set === "1");
+      updatePreviewMeta();
+      updateLoopMarkers();
+    });
+  });
+
+  window.addEventListener("resize", updateLoopMarkers);
+  if (typeof ResizeObserver !== "undefined" && sourceSeek) {
+    const seekResizeObserver = new ResizeObserver(() => {
+      updateLoopMarkers();
+    });
+    seekResizeObserver.observe(sourceSeek);
+    if (sourceSeek.parentElement) {
+      seekResizeObserver.observe(sourceSeek.parentElement);
+    }
+  }
+  window.requestAnimationFrame(() => {
+    updateLoopMarkers();
   });
 
   setLoopPreviewButtonState();
+  if (loopStartInput && !loopStartInput.dataset.set) {
+    loopStartInput.dataset.set = "0";
+  }
+  if (loopEndInput && !loopEndInput.dataset.set) {
+    loopEndInput.dataset.set = "0";
+  }
   updatePreviewMeta();
   updateCustomPlayerUi();
+  setDropzoneFileName("");
   resetProgress();
 
   form.addEventListener("submit", async (event) => {
@@ -558,7 +824,10 @@
     const formData = new FormData();
     formData.append("audio", file, file.name);
     formData.append("format", format);
+    formData.append("channels", channelsInput && channelsInput.value ? channelsInput.value : "2");
+    formData.append("sampleRate", sampleRateInput && sampleRateInput.value ? sampleRateInput.value : "48000");
     formData.append("loopEnabled", loopEnabledInput && loopEnabledInput.checked ? "1" : "0");
+    formData.append("loopMode", "metadata");
     formData.append("loopStart", loopStartInput && loopStartInput.value ? loopStartInput.value : "0");
     formData.append("loopEnd", loopEndInput && loopEndInput.value ? loopEndInput.value : "0");
 
@@ -613,7 +882,28 @@
       downloadLink.download = outputName;
       downloadLink.hidden = false;
       setProgress(100, tr("ninProgressDone", "Conversion terminee"));
-      setStatus(tr("ninStatusDone", "Conversion terminee. Clique sur Download."));
+      const wavChannels = Number.parseInt(String(result.wavChannels || ""), 10);
+      const wavSampleRate = Number.parseInt(String(result.wavSampleRate || ""), 10);
+      const statusParts = [tr("ninStatusDone", "Conversion terminee. Clique sur Download.")];
+      if (Number.isFinite(wavChannels) && wavChannels > 0) {
+        statusParts.push(`WAV: ${wavChannels} ch`);
+      }
+      if (Number.isFinite(wavSampleRate) && wavSampleRate > 0) {
+        statusParts.push(`${wavSampleRate} Hz`);
+      }
+      if (result.loopMode) {
+        statusParts.push(`loop=${String(result.loopMode)}`);
+      }
+      if (result.encoderLoopArgs) {
+        statusParts.push(`loopArgs=${String(result.encoderLoopArgs)}`);
+      }
+      if (result.waveLoopEndMode) {
+        statusParts.push(`waveLoopEnd=${String(result.waveLoopEndMode)}`);
+      }
+      if (result.loopEndMode) {
+        statusParts.push(`loopEndMode=${String(result.loopEndMode)}`);
+      }
+      setStatus(statusParts.join(" | "));
     } catch (error) {
       if (encodeTicker) {
         window.clearInterval(encodeTicker);

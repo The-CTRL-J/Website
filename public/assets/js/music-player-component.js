@@ -4,8 +4,12 @@
     return;
   }
 
-  const isNestedPage = /\/(resources|credit|ninconvert|placeholder)(\/|$)/i.test(window.location.pathname || "");
-  const assetRoot = isNestedPage ? "../assets/" : "assets/";
+  const explicitAssetRoot = (document.body && document.body.dataset ? (document.body.dataset.assetRoot || "") : "").trim();
+  const pathName = window.location.pathname || "";
+  const isDeepNestedPage = /\/resources\/ninconvert(\/|$)/i.test(pathName);
+  const isNestedPage = /\/(resources|credit|ninconvert|placeholder)(\/|$)/i.test(pathName);
+  const inferredAssetRoot = isDeepNestedPage ? "../../assets/" : (isNestedPage ? "../assets/" : "assets/");
+  const assetRoot = explicitAssetRoot || inferredAssetRoot;
   const placeholderCover = `${assetRoot}images/album-placeholder.svg`;
   const defaultTrack = `${assetRoot}Musics/Mr.%20Blue%20Sky.mp3`;
   const iconBase = `${assetRoot}images/icons/`;

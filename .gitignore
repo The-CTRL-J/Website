@@ -8,3 +8,9 @@ backend/node_modules/
 backend/tmp/
 backend/.env
 src/.vite/
+
+# Local backend only (keep on PC, don't publish on GitHub)
+backend/
+start-ninconvert-backend.bat
+BACKEND_LICENSE.md
+src/ninconvert/API.md

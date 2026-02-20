@@ -26,9 +26,15 @@
     },
     {
       "file": "Sherbet Lobby - bxnji.mp3",
-      "title": "Sherbet Lobby",
-      "artist": "bxnji",
-      "cover": "assets/images/album-placeholder.svg"
+      "title": "Sherbet",
+      "artist": "Nicopatty - bxnji",
+      "cover": "assets/Musics/covers/yume-nikki-madotsuki.gif"
+    },
+    {
+      "file": "FALL! (Slowed)_audio only.mp3",
+      "title": "FALL! (Slowed)",
+      "artist": "6IXXTY",
+      "cover": "assets/Musics/covers/FALL! (Slowed).jpg"
     }
   ]
 }
