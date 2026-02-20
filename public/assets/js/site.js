@@ -1328,6 +1328,25 @@
       }
     });
 
+    const nonAnimatedMap = [
+      ["#nin-oss-runtime-summary", t.ninOssRuntimeSummary],
+      ["#nin-oss-runtime-text", t.ninOssRuntimeText],
+      ["#nin-oss-vgaudio-text", t.ninOssVgaudioText],
+      ["#nin-oss-ffmpeg-text", t.ninOssFfmpegText],
+      ["#nin-oss-vgmstream-text", t.ninOssVgmstreamText],
+      ["#nin-oss-bcwav-summary", t.ninOssBcwavSummary],
+      ["#nin-oss-bcwav-text", t.ninOssBcwavText],
+      ["#nin-oss-bfwav-summary", t.ninOssBfwavSummary],
+      ["#nin-oss-bfwav-text", t.ninOssBfwavText]
+    ];
+    nonAnimatedMap.forEach(([selector, value]) => {
+      const node = document.querySelector(selector);
+      if (!node || typeof value !== "string") {
+        return;
+      }
+      node.textContent = value;
+    });
+
     if (settingsBtn && t.settingsAria) {
       settingsBtn.setAttribute("aria-label", t.settingsAria);
     }
