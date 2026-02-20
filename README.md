@@ -14,12 +14,6 @@ This project is currently under construction.
 - Frontend website: `MIT` (see `LICENSE`)
 - Dependencies and third-party notices: `THIRD_PARTY_NOTICES.md`
 
-## Development
-
-- Launch locally from the root: `start-local.bat`
-- Debugging (open window): `start-local-debug.bat`
-- Important: do not open `src/*.html` in `file://`.
-
 ## GitHub Pages
 
 - Deployment is done via GitHub Actions (`Deploy Website` workflow).
