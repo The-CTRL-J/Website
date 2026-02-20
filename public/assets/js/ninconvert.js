@@ -35,6 +35,11 @@
 
   const storageKey = "ninconvert-api-url";
   const translations = window.SITE_TRANSLATIONS || {};
+  const assetRoot = (() => {
+    const raw = document.body && document.body.dataset ? (document.body.dataset.assetRoot || "assets/") : "assets/";
+    return raw.endsWith("/") ? raw : `${raw}/`;
+  })();
+  const apiConfigPath = `${assetRoot}config/ninconvert-api.json`;
   let sourceObjectUrl = "";
   let sourceSampleRate = 48000;
   let loopPreviewEnabled = false;
@@ -87,6 +92,80 @@
     }
   } else if (apiUrlInput && isCurrentHostLocal) {
     apiUrlInput.value = `${window.location.protocol}//${host}:8787`;
+  }
+
+  async function fetchApiConfigValue() {
+    try {
+      const response = await fetch(`${apiConfigPath}?t=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) {
+        return "";
+      }
+      const data = await response.json();
+      if (!data || typeof data.apiBaseUrl !== "string") {
+        return "";
+      }
+      return normalizeApiBase(data.apiBaseUrl);
+    } catch (_) {
+      return "";
+    }
+  }
+
+  async function checkApiHealth(apiBase) {
+    if (!apiBase) {
+      return false;
+    }
+    try {
+      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timeoutId = controller
+        ? window.setTimeout(() => controller.abort(), 4500)
+        : 0;
+
+      const response = await fetch(`${apiBase}/health`, {
+        method: "GET",
+        cache: "no-store",
+        signal: controller ? controller.signal : undefined
+      });
+
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+      return response.ok;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function setBackendOfflineStatus() {
+    setStatus(
+      tr(
+        "ninStatusBackendOffline",
+        "LE BACKEND est pas ouvert, veuillez reessayer plus tard."
+      ),
+      true
+    );
+  }
+
+  async function syncApiFromConfigAndHealth() {
+    if (!apiUrlInput) {
+      return;
+    }
+
+    const configApi = await fetchApiConfigValue();
+    if (configApi && (!apiUrlInput.value || !savedApi || !isCurrentHostLocal)) {
+      apiUrlInput.value = configApi;
+      localStorage.setItem(storageKey, configApi);
+    }
+
+    const apiBase = normalizeApiBase(apiUrlInput.value || "");
+    if (!apiBase) {
+      setBackendOfflineStatus();
+      return;
+    }
+
+    const online = await checkApiHealth(apiBase);
+    if (!online) {
+      setBackendOfflineStatus();
+    }
   }
 
   function setStatus(message, isError = false) {
@@ -794,6 +873,7 @@
   updateCustomPlayerUi();
   setDropzoneFileName("");
   resetProgress();
+  void syncApiFromConfigAndHealth();
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -815,11 +895,16 @@
 
     const apiBase = normalizeApiBase(apiUrlInput ? apiUrlInput.value : "");
     if (!apiBase) {
-      setStatus(tr("ninStatusMissingApi", "Ajoute ton URL API d'abord (backend NinConvert)."), true);
+      setBackendOfflineStatus();
       return;
     }
 
     localStorage.setItem(storageKey, apiBase);
+    const backendOnline = await checkApiHealth(apiBase);
+    if (!backendOnline) {
+      setBackendOfflineStatus();
+      return;
+    }
 
     const formData = new FormData();
     formData.append("audio", file, file.name);
