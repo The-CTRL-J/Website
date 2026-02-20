@@ -1,27 +1,27 @@
 # CTRL_J Website
 
-Some Website with multiple resources and tools inside.
-Ce projet est actuellement en phase de construction.
+Website containing several resources and tools.
+This project is currently under construction.
 
 ## Structure
 
-- `src/`: pages HTML source (`index`, `resources`, `credit`, `ninconvert`, `placeholder`)
-- `public/`: assets statiques (`assets/...`)
-- `.github/workflows/deploy-pages.yml`: deploiement GitHub Pages automatique via Actions
+- `src/`: source HTML pages (`index`, `resources`, `credit`, `ninconvert`, `placeholder`)
+- `public/`: static resources (`assets/...`)
+- `.github/workflows/deploy-pages.yml`: automatic GitHub Pages deployment via Actions
 
 ## License
 
 - Frontend website: `MIT` (see `LICENSE`)
-- Third-party dependencies and notices: `THIRD_PARTY_NOTICES.md`
+- Dependencies and third-party notices: `THIRD_PARTY_NOTICES.md`
 
-## Dev
+## Development
 
-- Lancer en local depuis la racine: `start-local.bat`
-- Debug (fenetre ouverte): `start-local-debug.bat`
-- Important: ne pas ouvrir `src/*.html` en `file://`.
+- Launch locally from the root: `start-local.bat`
+- Debugging (open window): `start-local-debug.bat`
+- Important: do not open `src/*.html` in `file://`.
 
 ## GitHub Pages
 
-- Le deploy se fait par GitHub Actions (workflow `Deploy Website`).
-- Source unique: `src` + `public`.
-- Pour activer: dans GitHub > Settings > Pages > Build and deployment > Source = `GitHub Actions`.
+- Deployment is done via GitHub Actions (`Deploy Website` workflow).
+- Single source: `src` + `public`.
+- To enable: in GitHub > Settings > Pages > Creation and deployment > Source = `GitHub Actions`.
