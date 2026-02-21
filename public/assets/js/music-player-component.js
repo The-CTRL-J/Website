@@ -11,7 +11,7 @@
   const inferredAssetRoot = isDeepNestedPage ? "../../assets/" : (isNestedPage ? "../assets/" : "assets/");
   const assetRoot = explicitAssetRoot || inferredAssetRoot;
   const placeholderCover = `${assetRoot}images/album-placeholder.svg`;
-  const defaultTrack = `${assetRoot}Musics/Mr.%20Blue%20Sky.mp3`;
+  const defaultTrack = `${assetRoot}Musics/nico's nextbots ost - kensuke.mp3`;
   const iconBase = `${assetRoot}images/icons/`;
 
   slot.innerHTML = `
